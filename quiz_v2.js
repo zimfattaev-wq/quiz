@@ -325,4 +325,128 @@ async function screenCards(name, only) {
   if (!r.ok) return screenSubject(name);
   let deck = r.items.filter(c => !only || only.includes(c.id));
   deck.sort(() => Math.random() - .5);
-  deck.sort((a, b) => (a.st === 0 ? 0 : a.st == null ? 1 : 2) - (b
+  deck.sort((a, b) => (a.st === 0 ? 0 : a.st == null ? 1 : 2) - (b.st === 0 ? 0 : b.st == null ? 1 : 2));
+  let i = 0, kn = 0, unk = [];
+  const back = () => screenSubject(name);
+  const draw = () => {
+    if (i >= deck.length) {
+      html(`${backBtn()}<div class="card" style="text-align:center"><h2>🃏 ${t.cardsDone}</h2>
+        <div class="facts" style="grid-template-columns:1fr 1fr"><div><b style="color:var(--green)">${kn}</b><span>${t.known}</span></div><div><b style="color:var(--red)">${unk.length}</b><span>${t.unknown}</span></div></div>
+        ${unk.length ? `<button class="btn" id="unk">${t.onlyUnk} (${unk.length})</button>` : ""}
+        <button class="btn ghost" id="ag">${t.again}</button></div>`);
+      wireBack(back);
+      if ($("#unk")) $("#unk").onclick = () => screenCards(name, unk.slice());
+      $("#ag").onclick = () => screenCards(name);
+      hap("ok");
+      return;
+    }
+    const c = deck[i];
+    html(`${backBtn()}<div class="top"><div class="muted">🃏 <b>${i + 1}</b> / ${deck.length}</div><div class="muted">✅ ${kn} · ❌ ${unk.length}</div></div>
+      <div class="prog"><i style="width:${100 * i / deck.length}%"></i></div>
+      <div class="fc" id="fc">${c.st === 0 ? "❌ " : c.st === 1 ? "✅ " : ""}${esc(c.q)}<div class="hint">${t.tap}</div></div>
+      <div class="two"><button class="btn red" id="no">${t.dont}</button><button class="btn green" id="yes">${t.know}</button></div>`);
+    wireBack(back);
+    const fc = $("#fc");
+    let flipped = false;
+    fc.onclick = () => {
+      if (window.getSelection && String(window.getSelection())) return;
+      hap(); fc.classList.add("flip");
+      setTimeout(() => {
+        flipped = !flipped;
+        fc.classList.toggle("back", flipped);
+        fc.innerHTML = flipped ? `<div class="muted" style="font-weight:600">${esc(c.q)}</div><div class="ans">✅ ${esc(c.a)}</div>`
+          : `${esc(c.q)}<div class="hint">${t.tap}</div>`;
+        fc.classList.remove("flip");
+      }, 180);
+    };
+    const mark = know => { api("/api/card", {s: name, id: c.id, know}); know ? kn++ : unk.push(c.id); hap(know ? "ok" : "bad"); i++; draw(); };
+    $("#yes").onclick = () => mark(true);
+    $("#no").onclick = () => mark(false);
+    $("#app").appendChild(repBtn({id: c.id, s: name}));
+  };
+  draw();
+}
+
+// ---------- выбрать любой вопрос и ответить ----------
+async function screenPick(name) {
+  const t = x();
+  html('<div class="spin"><i></i></div>');
+  const r = await api("/api/qlist?s=" + encodeURIComponent(name));
+  if (!r.ok) return screenSubject(name);
+  const all = r.items;
+  const P = S.pick && S.pick.name === name ? S.pick : (S.pick = {name, q: "", f: "all", lim: 60});
+  html(`${backBtn()}<h2>🎯 ${esc(subjName(name))}</h2>
+    <input id="sq" placeholder="${t.search}" autocomplete="off" value="${esc(P.q)}">
+    <div class="chips" style="margin-top:10px">${[["all", t.fAll], ["none", t.fNew], ["bad", t.fBad], ["fav", t.fFav]].map(c =>
+      `<button data-f="${c[0]}" class="${P.f === c[0] ? "on" : ""}">${c[1]}</button>`).join("")}</div><div id="pl"></div>`);
+  wireBack(() => { S.pick = null; screenSubject(name); });
+  const list = () => {
+    const s = P.q.trim().toLowerCase();
+    return all.filter(z => (P.f === "all" || (P.f === "none" && z.st == null) || (P.f === "bad" && z.st === 0) || (P.f === "fav" && z.fav))
+      && (!s || z.q.toLowerCase().includes(s) || String(z.no) === s));
+  };
+  const draw = () => {
+    const ls = list();
+    $("#pl").innerHTML = `<div class="muted">${L().found}: <b>${ls.length}</b></div>` + ls.slice(0, P.lim).map(z =>
+      `<button class="pk" data-id="${z.id}"><span class="no">${z.no}.</span><span>${z.fav ? "⭐ " : ""}${hl(z.q, P.q.trim().toLowerCase())}</span>
+       <span class="s">${z.st === 0 ? "❌" : z.st === 1 ? "✅" : ""}</span></button>`).join("")
+      + (ls.length > P.lim ? `<button class="btn ghost" id="more">${L().showMore}</button>` : "");
+    if ($("#more")) $("#more").onclick = () => { P.lim += 100; draw(); };
+    document.querySelectorAll(".pk").forEach(b => b.onclick = () => { hap(); const ids = list().map(z => z.id); screenOne(name, b.dataset.id, ids); });
+  };
+  $("#sq").oninput = e => { P.q = e.target.value; P.lim = 60; draw(); };
+  document.querySelectorAll(".chips button").forEach(b => b.onclick = () => {
+    P.f = b.dataset.f; P.lim = 60; document.querySelectorAll(".chips button").forEach(z => z.classList.toggle("on", z === b)); draw();
+  });
+  draw();
+}
+async function screenOne(name, id, ids) {
+  const t = x(), l = L();
+  html('<div class="spin"><i></i></div>');
+  const r = await api("/api/one?s=" + encodeURIComponent(name) + "&id=" + id);
+  if (!r.ok) return screenPick(name);
+  const q = r.q, pos = ids.indexOf(id);
+  html(`${backBtn()}<div class="top"><div class="muted">🎯 ${pos + 1} / ${ids.length}</div>
+    <div class="tr"><button class="star ${q.fav ? "on" : ""}" id="star">${q.fav ? "★" : "☆"}</button></div></div>
+    <div class="card"><span class="subj">${esc(q.title)}</span><div class="qtext">${esc(q.text)}</div>
+    ${q.opts.map((o, k) => `<button class="opt" data-k="${k}"><b>${LET[k]}</b><span>${esc(o)}</span></button>`).join("")}
+    <div class="fb" id="fb"></div></div>
+    <div class="two"><button class="btn ghost" id="tl">${t.toListQ}</button><button class="btn" id="nx">${t.next}</button></div>`);
+  const toPick = () => screenPick(name);
+  wireBack(toPick);
+  document.querySelector("#app .card").appendChild(repBtn({id, s: name}));
+  $("#tl").onclick = toPick;
+  const nextId = ids[(pos + 1) % ids.length];
+  $("#nx").onclick = () => screenOne(name, nextId, ids);
+  $("#star").onclick = async () => { hap(); const f = await api("/api/qfav", {id}); if (f.ok) { const b = $("#star"); b.textContent = f.fav ? "★" : "☆"; b.classList.toggle("on", f.fav); } };
+  let done = false;
+  document.querySelectorAll(".opt").forEach(b => b.onclick = async () => {
+    if (done) return; done = true; hap();
+    document.querySelectorAll(".opt").forEach(z => z.disabled = true);
+    b.classList.add("sel");
+    const a = await api("/api/oneans", {id, k: +b.dataset.k});
+    if (!a.ok) { done = false; return screenOne(name, id, ids); }
+    const res = a.res;
+    document.querySelectorAll(".opt").forEach((z, j) => { z.classList.remove("sel"); if (j === res.right) z.classList.add("right"); else if (j === res.chosen) z.classList.add("wrong"); });
+    const f = $("#fb"); f.textContent = res.ok ? l.right : l.wrong; f.className = "fb " + (res.ok ? "ok" : "bad");
+    hap(res.ok ? "ok" : "bad");
+  });
+}
+
+// ---------- профиль: кнопки истории и недели ----------
+const _sp = screenProfile;
+screenProfile = async function() {
+  await _sp();
+  const pc = document.querySelector("#app .pcard");
+  if (!pc || $("#qbar")) return;
+  pc.insertAdjacentHTML("afterend", `<div class="qbar" id="qbar"><button class="fire" id="qf">🔥 ${(S.me && S.me.streak) || 0}</button>
+    <button id="qh">${x().hist}</button><button id="qw">${x().week}</button></div>`);
+  $("#qf").onclick = () => screenStreak();
+  $("#qh").onclick = () => screenHistory();
+  $("#qw").onclick = () => screenWeek();
+};
+// после тренировки обновить серию
+const _show = show;
+show = async function(st) { if (st && (st.status === "tdone" || st.status === "done")) refreshStreak(); return _show(st); };
+})();
+</script>

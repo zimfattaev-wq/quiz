@@ -491,7 +491,7 @@ def _num(x, d=0):
 def _free(st):
     """Тренажёр: без таймера на вопрос (сворачивать можно), показываем секундомер."""
     if isinstance(st, dict) and st.get("status") == "tquestion" and not st.get("exam"):
-        st["left"] = None
+        st["left"] = 3600                           # старая страница не «сожжёт» вопрос
         st["free"] = True
     return st
 
@@ -530,6 +530,10 @@ def _handle2(method, path, query, body, user):
         return None
     uid = str(user["id"])
     post = method == "POST"
+    if path == "/api/tanswer" and post and _num(body.get("k"), -1) < 0:
+        s = C.STATE["tsess"].get(uid)
+        if s and not s.get("exam"):                 # в тренажёре время не выходит — «таймаут» не засчитываем
+            return {"ok": True, "state": C.tr_state(uid)}
     if path == "/api/tstart" and post:
         mode = body.get("mode")
         cur = C.STATE["tsess"].get(uid) or {}
@@ -591,10 +595,15 @@ async def start_web(token):
     server = await _orig_start_web(token)
     bg(remind_loop())
     log.info("quiz v8: история, серия, карточки, неделя — включены")
+    if not _js.rstrip().endswith("</script>") or "screenOne" not in _js:
+        log.error("quiz_v2.js ОБРЕЗАН: %d строк — загрузите файл заново целиком (должно быть 452 строки)", _js.count("\n"))
+    else:
+        log.info("quiz_v2.js в порядке: %d строк", _js.count("\n"))
     return server
 
 
 W.start_web = start_web
 
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "quiz_v2.js"), encoding="utf-8") as _f:
-    W.ADMIN_JS = W.ADMIN_JS + "\n" + _f.read()
+    _js = _f.read()
+W.ADMIN_JS = W.ADMIN_JS + "\n" + _js
