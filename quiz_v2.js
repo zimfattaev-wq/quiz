@@ -30,11 +30,22 @@ body:not(.lock) .qtext,body:not(.lock) .opt span,body:not(.lock) .rq,body:not(.l
 .wk:last-child{border-bottom:0}.wk.me{background:#eaf1ff;border-radius:10px;padding:9px 8px}
 .weak{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
 .weak:last-child{border-bottom:0}.weak span{flex:1;font-size:14px}.weak button{border:0;background:#eaf1ff;color:var(--accent);border-radius:10px;padding:7px 10px;font-weight:700}
+.nav{display:flex;gap:8px;align-items:center;margin:10px 0 2px}
+.nav button{border:1px solid var(--line);background:#fff;color:var(--accent);border-radius:12px;padding:9px 0;font-size:16px;font-weight:800}
+.nav .ar{width:52px}.nav .num{flex:1}
+.nav button:disabled{opacity:.35}
+.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;max-height:55vh;overflow:auto;margin:12px 0}
+.grid button{border:1px solid var(--line);background:#fff;color:var(--text);border-radius:10px;padding:10px 0;font-weight:700;font-size:15px}
+.grid button.ok{background:rgba(31,157,87,.15);border-color:var(--green);color:var(--green)}
+.grid button.bad{background:rgba(217,58,63,.12);border-color:var(--red);color:var(--red)}
+.grid button.dn{background:var(--line);color:var(--hint)}
+.grid button.cur{background:var(--accent);border-color:var(--accent);color:#fff}
+.lg{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--hint)}
 </style>
 <script>
 (function(){
 const X = {
- ru:{hist:"🕘 История",week:"🏆 Неделя",fire:"дн.",histH:"История",fAll:"Все",fZ:"📝 Зачёт",fP:"🔁 Тренировки",fT:"🏋️ Тренажёр",
+ ru:{goNo:"Перейти к вопросу",cur:"сейчас",solved:"решён",curQ:"➡️ К текущему вопросу",qNo:"Вопрос",pcert:"🏅 Сертификат тренировки",pcRib:"ТРЕНИРОВКА · ТЕСТ ЗАКРЫТ",pcSub:"не в зачёт — тренировочная попытка",pcL2:"прошёл(ла) тренировку по тесту",hist:"🕘 История",week:"🏆 Неделя",fire:"дн.",histH:"История",fAll:"Все",fZ:"📝 Зачёт",fP:"🔁 Тренировки",fT:"🏋️ Тренажёр",
   z:"зачёт",p:"тренировка",r:"тренажёр",noHist:"Пока пусто — пройдите тест или тренировку",noRev:"Разбор будет доступен после закрытия теста",
   oldRev:"Для старых попыток разбор не сохранился",
   pracH:"Тренировка теста",pracRules:["🔒 тест закрыт — тренируйтесь сколько угодно","📊 не идёт в рейтинг, статистику и Excel — только в историю",
@@ -52,7 +63,7 @@ const X = {
   again:"🔁 Ещё раз",onlyUnk:"🔁 Только «не знаю»",fNew:"🆕 Новые",fBad:"❌ С ошибкой",fFav:"⭐",search:"Поиск вопроса",
   next:"➡️ Следующий",toListQ:"📋 К списку",chooseAns:"Выберите ответ",free:"✅ можно сворачивать и подглядывать",
   modes:{prac:"Тренировка теста",tmist:"Ошибки темы",t:"Тренажёр",mist:"Работа над ошибками",hard:"Трудные",fav:"Избранное",rand:"Случайные",exam:"Пробный экзамен",retry:"Работа над ошибками",test:"Тест"}},
- uz:{hist:"🕘 Tarix",week:"🏆 Hafta",fire:"kun",histH:"Tarix",fAll:"Hammasi",fZ:"📝 Hisobga",fP:"🔁 Mashqlar",fT:"🏋️ Trenajyor",
+ uz:{goNo:"Savolga oʻtish",cur:"hozir",solved:"yechilgan",curQ:"➡️ Joriy savolga",qNo:"Savol",pcert:"🏅 Mashq sertifikati",pcRib:"MASHQ · TEST YOPILGAN",pcSub:"hisobga olinmaydi — mashq urinishi",pcL2:"test boʻyicha mashqni bajardi",hist:"🕘 Tarix",week:"🏆 Hafta",fire:"kun",histH:"Tarix",fAll:"Hammasi",fZ:"📝 Hisobga",fP:"🔁 Mashqlar",fT:"🏋️ Trenajyor",
   z:"hisobga",p:"mashq",r:"trenajyor",noHist:"Hozircha boʻsh — test yoki mashq topshiring",noRev:"Tahlil test yopilgandan keyin ochiladi",
   oldRev:"Eski urinishlar tahlili saqlanmagan",
   pracH:"Test mashqi",pracRules:["🔒 test yopilgan — xohlagancha mashq qiling","📊 reyting, statistika va Excelga kirmaydi — faqat tarixga",
@@ -70,7 +81,7 @@ const X = {
   again:"🔁 Yana",onlyUnk:"🔁 Faqat «bilmayman»",fNew:"🆕 Yangi",fBad:"❌ Xatoli",fFav:"⭐",search:"Savol qidirish",
   next:"➡️ Keyingi",toListQ:"📋 Roʻyxatga",chooseAns:"Javobni tanlang",free:"✅ ilovani yopish va qarash mumkin",
   modes:{prac:"Test mashqi",tmist:"Mavzu xatolari",t:"Trenajyor",mist:"Xatolar ustida ishlash",hard:"Qiyin",fav:"Saralangan",rand:"Tasodifiy",exam:"Sinov imtihoni",retry:"Xatolar ustida ishlash",test:"Test"}},
- en:{hist:"🕘 History",week:"🏆 Week",fire:"d",histH:"History",fAll:"All",fZ:"📝 Graded",fP:"🔁 Practice",fT:"🏋️ Trainer",
+ en:{goNo:"Go to question",cur:"now",solved:"solved",curQ:"➡️ Back to current question",qNo:"Question",pcert:"🏅 Practice certificate",pcRib:"PRACTICE · TEST CLOSED",pcSub:"not graded — practice attempt",pcL2:"completed a practice of the test",hist:"🕘 History",week:"🏆 Week",fire:"d",histH:"History",fAll:"All",fZ:"📝 Graded",fP:"🔁 Practice",fT:"🏋️ Trainer",
   z:"graded",p:"practice",r:"trainer",noHist:"Nothing yet — take a test or a practice",noRev:"Review opens after the test is closed",
   oldRev:"Review wasn't saved for old attempts",
   pracH:"Test practice",pracRules:["🔒 the test is closed — practice as much as you like","📊 not counted in ranking, stats or Excel — history only",
@@ -88,7 +99,7 @@ const X = {
   again:"🔁 Again",onlyUnk:"🔁 Only “don't know”",fNew:"🆕 New",fBad:"❌ Wrong",fFav:"⭐",search:"Search a question",
   next:"➡️ Next",toListQ:"📋 To list",chooseAns:"Choose an answer",free:"✅ you may minimize and look things up",
   modes:{prac:"Test practice",tmist:"Topic mistakes",t:"Trainer",mist:"Mistakes",hard:"Hard",fav:"Favorites",rand:"Random",exam:"Mock exam",retry:"Mistakes",test:"Test"}},
- zh:{hist:"🕘 历史",week:"🏆 本周",fire:"天",histH:"历史记录",fAll:"全部",fZ:"📝 正式",fP:"🔁 练习",fT:"🏋️ 练习库",
+ zh:{goNo:"跳到题目",cur:"当前",solved:"已答",curQ:"➡️ 回到当前题",qNo:"题目",pcert:"🏅 练习证书",pcRib:"练习 · 测验已关闭",pcSub:"不计分——练习记录",pcL2:"完成了测验练习",hist:"🕘 历史",week:"🏆 本周",fire:"天",histH:"历史记录",fAll:"全部",fZ:"📝 正式",fP:"🔁 练习",fT:"🏋️ 练习库",
   z:"正式",p:"练习",r:"练习库",noHist:"暂无记录——去做测验或练习吧",noRev:"测验关闭后可查看解析",
   oldRev:"旧记录没有保存解析",
   pracH:"测验练习",pracRules:["🔒 测验已关闭——可无限次练习","📊 不计入排名、统计和 Excel——只记入历史",
@@ -164,7 +175,62 @@ screenQuestion = function(st) {
   if (st.mode === "prac") { const m = document.querySelector(".top .muted"); if (m) m.insertAdjacentHTML("afterbegin", `<span class="badge p">${x().pracBadge}</span> `); }
   const card = document.querySelector("#app .card");
   if (card) card.appendChild(repBtn({i: st.i}));
+  if (st.no && st.nav && card) {
+    const b = document.querySelector(".top .muted b"); if (b) b.textContent = st.no;
+    card.parentNode.insertBefore(navBar(st, st.no - 1), card);
+  }
 };
+
+
+// ---------- навигация по вопросам: ◀ ▶ и выбор номера ----------
+function navTo(st, p) {                         // p — номер с нуля
+  if (S.busy || p < 0 || p >= st.nav.length) return;
+  const v = st.nav[p];
+  if (p === st.no - 1) return show(st);
+  if (v == null) return goto(p);
+  if (v === 2) return;                          // экзамен: ответы в конце
+  screenTView(st, p);
+}
+async function goto(p) {
+  if (S.busy) return;
+  S.busy = true; hap();
+  const r = await api("/api/tgoto", {p});
+  S.busy = false;
+  r.state ? show(r.state) : resync();
+}
+function navGrid(st, curP) {
+  const t = x(), cls = v => v == null ? "" : v === 1 ? "ok" : v === 0 ? "bad" : "dn";
+  const o = overlay(`<b>${t.goNo}</b><div class="lg"><span>🟦 ${t.cur}</span><span>🟩 ✅</span><span>🟥 ❌</span></div>
+    <div class="grid">${st.nav.map((v, p) => `<button data-p="${p}" class="${p === curP ? "cur" : cls(v)}" ${v === 2 ? "disabled" : ""}>${p + 1}</button>`).join("")}</div>
+    <button class="btn ghost" id="gx">${x().cancel}</button>`);
+  o.querySelector("#gx").onclick = () => o.remove();
+  o.querySelectorAll(".grid button").forEach(b => b.onclick = () => { o.remove(); navTo(st, +b.dataset.p); });
+  const c = o.querySelector(".grid .cur"); if (c) c.scrollIntoView({block: "center"});
+}
+function navBar(st, p) {
+  const d = document.createElement("div"); d.className = "nav";
+  d.innerHTML = `<button class="ar" id="nvp" ${p <= 0 ? "disabled" : ""}>◀</button>
+    <button class="num" id="nvn">№ ${p + 1} / ${st.nav.length} ▾</button>
+    <button class="ar" id="nvx" ${p >= st.nav.length - 1 ? "disabled" : ""}>▶</button>`;
+  d.querySelector("#nvp").onclick = () => navTo(st, p - 1);
+  d.querySelector("#nvx").onclick = () => navTo(st, p + 1);
+  d.querySelector("#nvn").onclick = () => { hap(); navGrid(st, p); };
+  return d;
+}
+async function screenTView(st, p) {
+  const t = x(), l = L();
+  const r = await api("/api/tview?p=" + p);
+  if (!r.ok) return show(st);
+  const v = r.item;
+  html(`<div class="top"><div class="muted">🏋️ ${t.qNo} <b>${v.no}</b> ${l.of} ${v.n} · ${t.solved}</div></div>
+    <div class="card"><div class="qtext">${esc(v.q)}</div>
+    ${v.opts.map((o, k) => `<div class="ro ${k === v.right ? "right" : (k === v.chosen ? "wrong" : "")}">${k === v.right ? "✅" : (k === v.chosen ? "❌" : "▫️")} ${esc(o)}${k === v.chosen && k !== v.right ? `<span class="muted"> — ${l.yours}</span>` : ""}</div>`).join("")}
+    ${v.chosen === -1 ? `<div class="muted">⏰ ${l.noAns}</div>` : ""}</div>
+    <button class="btn" id="cq">${t.curQ} (№ ${st.no})</button>`);
+  $("#app").insertBefore(navBar(st, p), $("#app .card"));
+  $("#cq").onclick = () => show(st);
+  setBack(() => show(st));
+}
 
 // ---------- закрытые тесты: тренировка ----------
 function screenPrac(q) {
@@ -200,7 +266,57 @@ screenTrDone = function(st) {
   const out = async () => { await api("/api/tstop", {}); S.tab = "test"; S.quiz = null; S.st = null; screenList(); };
   const b = $("#lst"); if (b) { b.textContent = x().toTests; b.onclick = out; }
   wireBack(out);
+  const card = document.querySelector("#app .card");
+  if (card && st.code) {
+    card.insertAdjacentHTML("beforeend", `<button class="btn" id="pc2" style="margin-top:10px">${x().pcert}</button><div id="pcm" class="muted" style="margin-top:8px"></div>`);
+    $("#pc2").onclick = () => { hap(); pracCert(st); };
+  }
 };
+
+
+// ---------- сертификат тренировки (тест закрыт) ----------
+async function pracCert(st) {
+  const l = L(), t = x(), r = st.result || {}, msg = $("#pcm");
+  msg.textContent = l.certMaking;
+  const W = 1080, H = 1350, c = document.createElement("canvas"); c.width = W; c.height = H;
+  const g2 = c.getContext("2d"), F = '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif';
+  g2.fillStyle = "#ffffff"; g2.fillRect(0, 0, W, H);
+  const g = g2.createLinearGradient(0, 0, W, 0); g.addColorStop(0, "#7a3b00"); g.addColorStop(1, "#e8590c");
+  g2.fillStyle = g; g2.fillRect(0, 0, W, 300);
+  g2.strokeStyle = "#e8590c"; g2.lineWidth = 14; g2.strokeRect(30, 30, W - 60, H - 60);
+  g2.strokeStyle = "#868e96"; g2.lineWidth = 4; g2.setLineDash([18, 12]); g2.strokeRect(56, 56, W - 112, H - 112); g2.setLineDash([]);
+  try {
+    const img = new Image(); img.src = "/logo";
+    await new Promise((ok, no) => { img.onload = ok; img.onerror = no; });
+    g2.save(); g2.beginPath(); g2.arc(W / 2, 300, 110, 0, Math.PI * 2); g2.fillStyle = "#fff"; g2.fill(); g2.clip();
+    g2.drawImage(img, W / 2 - 100, 200, 200, 200); g2.restore();
+  } catch (e) {}
+  g2.textAlign = "center"; g2.fillStyle = "#fff"; g2.font = `800 54px ${F}`; g2.fillText("TSUE QUIZ", W / 2, 140);
+  g2.fillStyle = "#0b1f44"; g2.font = `800 76px ${F}`; g2.fillText(l.certT, W / 2, 490);
+  g2.fillStyle = "#e8590c"; g2.font = `800 34px ${F}`; g2.fillText("🔁 " + t.pcRib, W / 2, 545);
+  g2.fillStyle = "#5d6f92"; g2.font = `400 34px ${F}`; g2.fillText(l.certL1, W / 2, 600);
+  g2.fillStyle = "#0b1f44"; g2.font = `800 62px ${F}`; wrapText(g2, S.me.name || "", W / 2, 680, W - 180, 68, 2);
+  g2.fillStyle = "#5d6f92"; g2.font = `400 34px ${F}`; g2.fillText(t.pcL2, W / 2, 755);
+  g2.fillStyle = "#0b1f44"; g2.font = `700 42px ${F}`;
+  let y = wrapText(g2, "«" + (st.title || "") + "»", W / 2, 815, W - 180, 52, 2);
+  const cy = Math.min(1090, Math.max(1040, y + 150));
+  g2.beginPath(); g2.arc(W / 2, cy, 115, 0, Math.PI * 2); g2.fillStyle = "#fff4e6"; g2.fill();
+  g2.lineWidth = 14; g2.strokeStyle = "#e8590c"; g2.beginPath();
+  g2.arc(W / 2, cy, 115, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (r.pct || 0) / 100); g2.stroke();
+  g2.fillStyle = "#e8590c"; g2.font = `800 70px ${F}`; g2.fillText((r.pct ?? 0) + "%", W / 2, cy + 24);
+  g2.fillStyle = "#0b1f44"; g2.font = `800 44px ${F}`;
+  g2.fillText(`${r.points ?? 0}/${r.max ?? 50}`, 205, cy - 5); g2.fillText(`${r.score ?? 0}/${r.total ?? 0}`, W - 205, cy - 5);
+  g2.fillStyle = "#5d6f92"; g2.font = `400 26px ${F}`;
+  g2.fillText(l.pts, 205, cy + 35, 250); g2.fillText(l.corr, W - 205, cy + 35, 250);
+  g2.font = `400 28px ${F}`; g2.fillText(`${t.pcSub}  ·  ${new Date().toLocaleDateString()}`, W / 2, 1250);
+  // диагональная лента «тренировка»
+  g2.save(); g2.translate(W - 170, 170); g2.rotate(Math.PI / 4);
+  g2.fillStyle = "rgba(232,89,12,.92)"; g2.fillRect(-260, -34, 520, 68);
+  g2.fillStyle = "#fff"; g2.font = `800 30px ${F}`; g2.fillText(t.pcRib.split(" · ")[0], 0, 11); g2.restore();
+  const res = await api("/api/pcert", {code: st.code, img: c.toDataURL("image/jpeg", 0.85)}, {timeout: 30000, tries: 2});
+  msg.textContent = res.ok ? l.certSent : "❗ " + (res.error === "net" ? l.net : (res.error || "error"));
+  hap(res.ok ? "ok" : "bad");
+}
 
 // ---------- быстрая панель: серия, история, неделя ----------
 function qbar() {

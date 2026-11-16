@@ -138,6 +138,95 @@ def _tr_record(uid, choice, how="answer"):
 
 C._tr_record = _tr_record
 
+
+def _pos(s):
+    p = s.get("pos")
+    if not p or len(p) != len(s["items"]):
+        p = s["pos"] = list(range(len(s["items"])))
+    return p
+
+
+def _swap(s, i, j):
+    if i == j:
+        return
+    p = _pos(s)
+    for k in ("items", "shuf"):
+        s[k][i], s[k][j] = s[k][j], s[k][i]
+    p[i], p[j] = p[j], p[i]
+
+
+def _advance(s):
+    """После ответа — следующий по номеру нерешённый вопрос (после 49-го идёт 50-й)."""
+    i = s["i"]
+    if s.get("result") or i == 0 or i >= len(s["items"]):
+        return
+    p = _pos(s)
+    last, rest = p[i - 1], p[i:]
+    nxt = min((x for x in rest if x > last), default=min(rest))
+    _swap(s, i, p.index(nxt, i))
+
+
+_tr_record_v8 = C._tr_record
+
+
+def _tr_record_nav(uid, choice, how="answer"):
+    s = C.STATE["tsess"].get(str(uid))
+    if s:
+        _pos(s)
+    r = _tr_record_v8(uid, choice, how)
+    s = C.STATE["tsess"].get(str(uid))
+    if s and not s.get("result"):
+        _advance(s)
+    return r
+
+
+C._tr_record = _tr_record_nav
+
+
+def tr_goto(uid, p):
+    s = C.STATE["tsess"].get(str(uid))
+    if not s or s.get("result"):
+        return "no_session"
+    pos = _pos(s)
+    if p not in pos[s["i"]:]:
+        return "done"
+    _swap(s, s["i"], pos.index(p, s["i"]))
+    s["sent"] = None
+    C.save()
+    return None
+
+
+def tr_view(uid, p):
+    """Уже решённый вопрос этой тренировки (в экзамене — нельзя, ответы в конце)."""
+    s = C.STATE["tsess"].get(str(uid))
+    if not s or s.get("exam"):
+        return None
+    pos = _pos(s)
+    if p not in pos[:s["i"]]:
+        return None
+    k = pos.index(p)
+    if k >= len(s.get("log", [])):
+        return None
+    c, qi, ch, ok = s["log"][k]
+    qz = C.STATE["quizzes"].get(c)
+    if not qz:
+        return None
+    q = qz["questions"][qi]
+    return {"no": p + 1, "n": len(pos), "q": q["q"], "opts": q["opts"], "right": q["right"], "chosen": ch, "ok": ok}
+
+
+def _nav(uid, st):
+    """В состояние вопроса — его номер и карта: какие номера уже решены."""
+    s = C.STATE["tsess"].get(str(uid))
+    if not s or st.get("status") != "tquestion" or s.get("result"):
+        return
+    pos = _pos(s)
+    nav = [None] * len(pos)
+    for k in range(min(s["i"], len(s.get("log", [])))):
+        nav[pos[k]] = 2 if s.get("exam") else s["log"][k][3]
+    st["no"] = pos[s["i"]] + 1
+    st["nav"] = nav
+
 _orig_record = C._record
 
 
@@ -163,6 +252,8 @@ def _tr_finish(uid, s):
         rec["runs"] += 1
         rec["best"] = max(rec["best"], s["result"]["pct"])
         rec["last"] = s["result"]["pct"]
+        rec["res"] = {k: s["result"][k] for k in ("score", "total", "pct", "points")}
+        rec["date"] = day()
         s["result"]["best"], s["result"]["runs"] = rec["best"], rec["runs"]
     h = u.setdefault("hist", [])
     u["hseq"] = u.get("hseq", 0) + 1
@@ -437,6 +528,42 @@ def report(uid, body):
     return None
 
 
+PCERT = {"ru": "🔁 <b>Тренировка</b> · тест закрыт, не в зачёт\n🏅 {name}: {pct}% ({points}/50) — «{title}»",
+         "uz": "🔁 <b>Mashq</b> · test yopilgan, hisobga olinmaydi\n🏅 {name}: {pct}% ({points}/50) — «{title}»",
+         "en": "🔁 <b>Practice</b> · test closed, not graded\n🏅 {name}: {pct}% ({points}/50) — “{title}”",
+         "zh": "🔁 <b>练习</b> · 测验已关闭，不计分\n🏅 {name}：{pct}%（{points}/50）—「{title}」"}
+
+
+async def _send_photo(chat_id, data, caption):
+    import httpx
+    async with httpx.AsyncClient(timeout=30) as cl:
+        await cl.post(f"https://api.telegram.org/bot{BOT['token']}/sendPhoto",
+                      data={"chat_id": str(chat_id), "caption": caption, "parse_mode": "HTML"},
+                      files={"photo": ("certificate.jpg", data, "image/jpeg")})
+
+
+def prac_cert(uid, body):
+    import base64
+    code = str(body.get("code", "")).upper()
+    u = C.user(uid)
+    rec = (u.get("prac") or {}).get(code)
+    qz = C.STATE["quizzes"].get(code)
+    if not rec or not rec.get("res") or not qz:
+        return "no_result"
+    try:
+        data = base64.b64decode(str(body.get("img", "")).split(",")[-1])
+    except Exception:
+        return "bad_image"
+    if not data.startswith(b"\xff\xd8") or len(data) > 3_000_000:
+        return "bad_image"
+    lang = u.get("lang") if u.get("lang") in PCERT else "ru"
+    r = rec["res"]
+    cap = PCERT[lang].format(name=html.escape(u.get("name") or ""), pct=r["pct"], points=r["points"],
+                             title=html.escape(qz["title"]))
+    bg(_send_photo(uid, data, cap))
+    return None
+
+
 REMIND = {"ru": ("🔥 Серия <b>{n}</b> дн. подряд! Сегодня вы ещё не занимались — 5 минут в тренажёре, и серия продолжится.",
                  "🏋️ Открыть тренажёр"),
           "uz": ("🔥 Ketma-ket <b>{n}</b> kun! Bugun hali shugʻullanmadingiz — trenajyorda 5 daqiqa va seriya davom etadi.",
@@ -503,6 +630,8 @@ def handle(method, path, query, body, user):
     if isinstance(r, dict):
         if isinstance(r.get("state"), dict):
             _free(r["state"])
+            if user:
+                _nav(str(user["id"]), r["state"])
         if path == "/api/me" and user and r.get("ok"):
             r["streak"] = streak(C.user(user["id"]))
             r["v"] = 8
@@ -549,6 +678,15 @@ def _handle2(method, path, query, body, user):
         if err:
             return {"ok": False, "error": err}
         return {"ok": True, "state": C.tr_state(uid)}
+    if path == "/api/tgoto" and post:
+        err = tr_goto(uid, _num(body.get("p"), -1))
+        return {"ok": not err, "error": err, "state": C.tr_state(uid)}
+    if path == "/api/tview":
+        v = tr_view(uid, _num(query.get("p"), -1))
+        return {"ok": bool(v), "item": v}
+    if path == "/api/pcert" and post:
+        err = prac_cert(uid, body)
+        return {"ok": not err, "error": err}
     if path == "/api/history":
         return {"ok": True, "items": history(uid), "streak": streak_info(uid)}
     if path == "/api/hitem":
