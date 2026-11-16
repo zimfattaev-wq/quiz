@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TDIU Quiz</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--text:#0b1f44;--hint:#5d6f92;--accent:#1f63d6;--card:#f3f6fc;--line:#dbe4f3;--red:#d93a3f;--green:#1f9d57}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+html,body{margin:0;background:#fff;color:var(--text);min-height:100%;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;font-size:16px}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:url(/logo) center 60%/min(80vw,420px) no-repeat;opacity:.06}
+header{position:sticky;top:0;z-index:5;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:10px 14px;
+  display:flex;align-items:center;justify-content:space-between;gap:8px}
+h1{font-size:17px;margin:0;display:flex;align-items:center;gap:8px;min-width:0}
+h1 img{width:30px;height:30px;border-radius:50%;box-shadow:0 0 0 1px var(--line)}
+.lang{display:flex;background:var(--card);border-radius:10px;padding:2px}
+.lang button{border:0;background:none;color:var(--hint);padding:6px 7px;border-radius:8px;font-weight:600;font-size:12px}
+.lang button.on{background:var(--accent);color:#fff}
+main{padding:16px 14px 40px;max-width:640px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin:10px 0;
+  box-shadow:0 4px 14px rgba(20,50,110,.07)}
+h2{font-size:21px;margin:0 0 10px}
+.muted{color:var(--hint);font-size:14px;line-height:1.5}
+input{width:100%;border:1px solid var(--line);background:#fff;color:var(--text);border-radius:14px;padding:14px;
+  font-size:17px;outline:none;-webkit-user-select:text;user-select:text;margin:10px 0}
+input:focus{border-color:var(--accent)}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-size:17px;font-weight:700;
+  background:var(--accent);color:#fff;margin-top:10px}
+.btn.ghost{background:var(--card);color:var(--accent);border:1px solid var(--line)}
+.err{color:var(--red);font-size:14px;margin-top:6px;min-height:18px}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
+.facts div{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center}
+.facts b{display:block;font-size:20px;color:var(--accent)}
+.facts span{font-size:12px;color:var(--hint)}
+ul.rules{padding-left:18px;margin:10px 0;color:var(--hint);font-size:14px;line-height:1.55}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.prog{height:6px;background:var(--line);border-radius:6px;overflow:hidden;margin:6px 0 14px}
+.prog i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.timer{min-width:54px;text-align:center;font-weight:800;font-size:18px;color:var(--accent);
+  border:2px solid var(--accent);border-radius:12px;padding:4px 8px}
+.timer.warn{color:var(--red);border-color:var(--red)}
+.qtext{font-size:19px;font-weight:700;line-height:1.35;margin:4px 0 14px}
+.opt{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;border:1px solid var(--line);
+  background:#fff;color:var(--text);border-radius:14px;padding:14px;margin:8px 0;font-size:16px;line-height:1.35}
+.opt b{flex:0 0 28px;height:28px;border-radius:8px;background:var(--card);color:var(--accent);
+  display:flex;align-items:center;justify-content:center}
+.opt:active,.opt.sel{border-color:var(--accent);background:#eaf1ff}
+.big{font-size:52px;font-weight:800;color:var(--accent);text-align:center;margin:6px 0}
+.lb{margin-top:6px}
+.lb div{display:flex;justify-content:space-between;padding:9px 4px;border-bottom:1px solid var(--line);font-size:15px}
+.lb div.me{color:var(--accent);font-weight:700}
+.warnbox{background:#fff4e5;border:1px solid #ffd59e;color:#8a4b00;border-radius:12px;padding:10px;font-size:14px;margin:10px 0}
+.qitem{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1px solid var(--line);
+  background:#fff;color:var(--text);border-radius:16px;padding:14px;margin:10px 0;box-shadow:0 4px 14px rgba(20,50,110,.06)}
+.qitem .ic{font-size:26px}
+.qitem .tt{flex:1;min-width:0}
+.qitem .tt b{display:block;font-size:16px;line-height:1.3}
+.qitem .tt span{font-size:13px;color:var(--hint)}
+.qitem .st{font-size:13px;font-weight:700;color:var(--accent);white-space:nowrap}
+.qitem .st.ok{color:var(--green)}
+.subj{display:inline-block;font-size:11px;font-weight:700;color:var(--accent);background:#eaf1ff;
+  border-radius:8px;padding:2px 7px;margin-bottom:3px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:0 0 auto;border:1px solid var(--line);background:#fff;color:var(--text);border-radius:12px;
+  padding:7px 11px;font-size:13px;font-weight:600}
+.chips button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.btns .btn{margin:0;font-size:15px;padding:13px 8px}
+.pcard{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;border-radius:16px;padding:14px;
+  margin:4px 0 12px;background:linear-gradient(135deg,#1f63d6,#0b3a8a);color:#fff}
+.pcard .lv{font-size:30px}.pcard b{display:block;font-size:16px}.pcard span{font-size:13px;opacity:.85}
+.bar{height:8px;background:var(--line);border-radius:8px;overflow:hidden;margin:6px 0}
+.bar i{display:block;height:100%;background:var(--accent)}
+.srow{margin:10px 0}.srow div{display:flex;justify-content:space-between;font-size:14px}
+.rq{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;margin:10px 0}
+.rq .qq{font-weight:700;margin-bottom:8px;line-height:1.35}
+.ro{padding:8px 10px;border-radius:10px;margin:4px 0;font-size:15px;border:1px solid transparent}
+.ro.right{background:rgba(31,157,87,.12);border-color:rgba(31,157,87,.4)}
+.ro.wrong{background:rgba(217,58,63,.1);border-color:rgba(217,58,63,.4)}
+.ok{color:var(--green)}.bad{color:var(--red)}
+.ava{width:54px;height:54px;border-radius:50%;object-fit:cover;border:2px solid #fff;flex:0 0 auto;background:#fff}
+.avs{width:24px;height:24px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:6px}
+.opt.right{border-color:var(--green);background:rgba(31,157,87,.14)}
+.opt.right b{background:var(--green);color:#fff}
+.opt.wrong{border-color:var(--red);background:rgba(217,58,63,.12)}
+.opt.wrong b{background:var(--red);color:#fff}
+.opt:disabled{opacity:1}
+.fb{font-weight:800;font-size:18px;text-align:center;margin:6px 0 2px;min-height:24px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px;margin:4px 0 12px}
+.tabs button{border:0;background:none;color:var(--hint);padding:10px 6px;border-radius:10px;font-weight:700;font-size:15px}
+.tabs button.on{background:var(--accent);color:#fff}
+.bk{border:0;background:none;color:var(--accent);font-weight:700;font-size:16px;padding:6px 0;margin:0 0 6px}
+.net{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:9;background:#0b1f44;color:#fff;
+  border-radius:12px;padding:9px 14px;font-size:14px;box-shadow:0 6px 20px rgba(0,0,0,.2)}
+.stack{display:flex;height:10px;background:var(--line);border-radius:6px;overflow:hidden;margin:10px 0 8px}
+.stack i{display:block;height:100%}.stack i.ok{background:var(--green)}.stack i.bad{background:var(--red)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--hint)}
+.legend span::before{content:"";display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;background:var(--line)}
+.legend .lok::before{background:var(--green)}.legend .lbad::before{background:var(--red)}
+.scard{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin:0 0 12px;color:var(--text)}
+.scard b{display:block;font-size:18px;margin-bottom:2px}
+h3{font-size:17px;margin:18px 0 8px}
+.mlist{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}
+.mrow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;padding:14px;color:var(--text)}
+.mrow:last-child{border-bottom:0}
+.mrow>span:first-child{flex:1;min-width:0}.mrow b{display:block;font-size:16px}
+.mrow span span{font-size:13px;color:var(--hint)}.mrow span span b{display:inline;font-size:13px;color:var(--accent)}
+.mrow .go{color:var(--accent);font-size:22px}.mrow:disabled{opacity:.45}
+.seg{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 14px}
+.seg button{border:1px solid var(--line);background:#fff;color:var(--text);border-radius:999px;padding:9px 14px;font-size:15px;font-weight:600}
+.seg button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.lbl{font-weight:700;margin-top:12px}
+.tr{display:flex;align-items:center;gap:8px}
+.star{border:0;background:none;font-size:26px;line-height:1;color:var(--hint);padding:2px 4px}
+.star.on{color:#e0a100}
+.timer.wide{min-width:96px;font-size:16px}
+mark{background:#ffe58a;color:inherit;border-radius:3px}
+.hidden{display:none}
+.spin{display:flex;justify-content:center;padding:60px}
+.spin i{width:30px;height:30px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:r .8s linear infinite}
+@keyframes r{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<header>
+  <h1><img src="/logo" alt="" onerror="this.remove()"><span id="hdr">TDIU Quiz</span></h1>
+  <div class="lang"><button data-l="ru">RU</button><button data-l="uz">UZ</button><button data-l="en">EN</button><button data-l="zh">中文</button></div>
+</header>
+<main id="app"><div class="spin"><i></i></div></main>
+<script>
+const tg = window.Telegram ? Telegram.WebApp : null;
+if (tg) { tg.ready(); tg.expand(); try { tg.setHeaderColor("#ffffff"); tg.setBackgroundColor("#ffffff"); tg.disableVerticalSwipes(); } catch (e) {} }
+const T = {
+ ru:{hdr:"Тесты ТГЭУ",pts:"баллов",all:"Все",subjL:"Предмет",corr:"правильных ответов",list:"Доступные тесты",empty:"Тестов пока нет. Загляните позже 🙂",go:"Начать",name:"Как вас зовут?",nameHint:"Напишите имя и фамилию, как в журнале — они попадут в таблицу результатов.",
+  namePh:"Например: Azimov Aziz",save:"Продолжить",badName:"Напишите имя и фамилию — два слова, только буквы.",
+  code:"Введите код теста",codeHint:"Код даёт преподаватель, например A7K2Q9.",open:"Открыть тест",noQuiz:"Тест не найден",
+  q:"вопросов",sec:"сек на вопрос",att:"попытка",start:"▶️ Начать тест",
+  rules:["вопросы и варианты перемешаны у каждого","вернуться к вопросу нельзя","не успели — ответ не засчитан",
+   "⚠️ свернули приложение — вопрос сгорает","при равных баллах выше тот, кто быстрее"],
+  of:"из",question:"Вопрос",done:"Тест завершён",correct:"правильных",place:"Место",time:"Время",top:"🏆 Лучшие результаты",
+  already:"Вы уже прошли этот тест",closed:"Тест закрыт преподавателем",another:"📚 Все тесты",
+  left:"Вы сворачивали приложение: {n} раз(а) — эти вопросы не засчитаны.",participant:"Участник",auth:"Откройте тест через Telegram-бота."},
+ uz:{hdr:"TDIU testlari",pts:"ball",all:"Hammasi",subjL:"Fan",corr:"toʻgʻri javob",list:"Mavjud testlar",empty:"Hozircha test yoʻq. Keyinroq kiring 🙂",go:"Boshlash",name:"Ismingiz nima?",nameHint:"Ism va familiyangizni jurnaldagidek yozing — ular natijalar jadvaliga tushadi.",
+  namePh:"Masalan: Azimov Aziz",save:"Davom etish",badName:"Ism va familiyani yozing — ikki soʻz, faqat harflar.",
+  code:"Test kodini kiriting",codeHint:"Kodni oʻqituvchi beradi, masalan A7K2Q9.",open:"Testni ochish",noQuiz:"Test topilmadi",
+  q:"savol",sec:"soniya / savol",att:"urinish",start:"▶️ Testni boshlash",
+  rules:["savollar va javoblar har kimda aralashtirilgan","oldingi savolga qaytib boʻlmaydi","ulgurmasangiz — javob hisoblanmaydi",
+   "⚠️ ilovani yopsangiz — savol kuyadi","ball teng boʻlsa, tezroq javob bergan yuqorida"],
+  of:"/",question:"Savol",done:"Test yakunlandi",correct:"toʻgʻri",place:"Oʻrin",time:"Vaqt",top:"🏆 Eng yaxshi natijalar",
+  already:"Siz bu testni topshirgansiz",closed:"Test oʻqituvchi tomonidan yopilgan",another:"📚 Barcha testlar",
+  left:"Siz ilovani {n} marta yopdingiz — bu savollar hisoblanmadi.",participant:"Ishtirokchi",auth:"Testni Telegram-bot orqali oching."},
+ en:{hdr:"TSUE Quiz",pts:"points",all:"All",subjL:"Subject",corr:"correct answers",list:"Available tests",empty:"No tests yet. Check back later 🙂",go:"Start",name:"What is your name?",nameHint:"Type your first and last name as in the register — they appear in the results table.",
+  namePh:"e.g. Azimov Aziz",save:"Continue",badName:"Type first and last name — two words, letters only.",
+  code:"Enter the test code",codeHint:"Your teacher gives the code, e.g. A7K2Q9.",open:"Open test",noQuiz:"Test not found",
+  q:"questions",sec:"sec per question",att:"attempt",start:"▶️ Start test",
+  rules:["questions and answers are shuffled for everyone","you can't go back","no answer in time — not counted",
+   "⚠️ leaving the app burns the question","equal scores — the faster one ranks higher"],
+  of:"of",question:"Question",done:"Test finished",correct:"correct",place:"Place",time:"Time",top:"🏆 Top results",
+  already:"You have already taken this test",closed:"The test is closed",another:"📚 All tests",
+  left:"You left the app {n} time(s) — those questions were not counted.",participant:"Participant",auth:"Open the test from the Telegram bot."},
+ zh:{hdr:"塔什干国立经济大学测验",pts:"分",all:"全部",subjL:"科目",corr:"答对",list:"可参加的测验",empty:"暂无测验，请稍后再来 🙂",go:"开始",name:"您叫什么名字？",nameHint:"请按花名册输入名和姓，它们会显示在成绩表中。",
+  namePh:"例如：Azimov Aziz",save:"继续",badName:"请输入名和姓——两个词，只能是字母。",
+  code:"输入测验代码",codeHint:"代码由老师提供，例如 A7K2Q9。",open:"打开测验",noQuiz:"未找到测验",
+  q:"题",sec:"秒/题",att:"次机会",start:"▶️ 开始测验",
+  rules:["每个人的题目和选项顺序都不同","不能返回上一题","超时不计分","⚠️ 离开应用，本题作废","分数相同时，用时短者排名靠前"],
+  of:"/",question:"第",done:"测验结束",correct:"正确",place:"名次",time:"用时",top:"🏆 最佳成绩",
+  already:"您已完成此测验",closed:"测验已关闭",another:"📚 全部测验",
+  left:"您离开应用 {n} 次——这些题目不计分。",participant:"参加者",auth:"请通过 Telegram 机器人打开测验。"}
+};
+const T2 = {
+ ru:{prof:"Мой профиль",lvls:["🌱 Новичок","📘 Знаток","🎯 Эксперт","🏆 Мастер","👑 Легенда"],xp:"опыта",toNext:"до следующего уровня",
+  maxLvl:"Максимальный уровень!",tests:"тестов",avgPct:"средний %",avgPts:"средний балл",best:"лучший %",subjects:"📘 По предметам",
+  history:"🗂 История тестов",noHist:"Вы ещё не прошли ни одного теста.",editName:"✏️ Изменить имя",cert:"🏅 Сертификат",
+  certMaking:"Создаю сертификат…",certSent:"📩 Сертификат отправлен в чат с ботом!",story:"📲 В сторис",review:"📖 Разбор ошибок",
+  reviewLocked:"📖 Разбор ошибок откроется, когда преподаватель закроет тест.",onlyErr:"Только ошибки",allQ:"Все вопросы",
+  mistakes:"Ошибок",back:"← Назад",certT:"СЕРТИФИКАТ",certL1:"подтверждает, что",certL2:"прошёл(ла) тест",noAns:"нет ответа",
+  yours:"ваш ответ"},
+ uz:{prof:"Mening profilim",lvls:["🌱 Yangi boshlovchi","📘 Bilimdon","🎯 Ekspert","🏆 Usta","👑 Afsona"],xp:"tajriba",toNext:"keyingi darajagacha",
+  maxLvl:"Eng yuqori daraja!",tests:"test",avgPct:"oʻrtacha %",avgPts:"oʻrtacha ball",best:"eng yaxshi %",subjects:"📘 Fanlar boʻyicha",
+  history:"🗂 Testlar tarixi",noHist:"Siz hali birorta test topshirmagansiz.",editName:"✏️ Ismni oʻzgartirish",cert:"🏅 Sertifikat",
+  certMaking:"Sertifikat tayyorlanmoqda…",certSent:"📩 Sertifikat bot chatiga yuborildi!",story:"📲 Storiga",review:"📖 Xatolar tahlili",
+  reviewLocked:"📖 Xatolar tahlili oʻqituvchi testni yopgandan soʻng ochiladi.",onlyErr:"Faqat xatolar",allQ:"Barcha savollar",
+  mistakes:"Xatolar",back:"← Orqaga",certT:"SERTIFIKAT",certL1:"tasdiqlaydiki,",certL2:"testni topshirdi",noAns:"javob yoʻq",
+  yours:"sizning javobingiz"},
+ en:{prof:"My profile",lvls:["🌱 Beginner","📘 Learner","🎯 Expert","🏆 Master","👑 Legend"],xp:"XP",toNext:"to next level",
+  maxLvl:"Maximum level!",tests:"tests",avgPct:"average %",avgPts:"avg points",best:"best %",subjects:"📘 By subject",
+  history:"🗂 Test history",noHist:"You haven't taken any tests yet.",editName:"✏️ Change name",cert:"🏅 Certificate",
+  certMaking:"Creating certificate…",certSent:"📩 Certificate sent to the bot chat!",story:"📲 To story",review:"📖 Review mistakes",
+  reviewLocked:"📖 The review opens when the teacher closes the test.",onlyErr:"Mistakes only",allQ:"All questions",
+  mistakes:"Mistakes",back:"← Back",certT:"CERTIFICATE",certL1:"this certifies that",certL2:"completed the test",noAns:"no answer",
+  yours:"your answer"},
+ zh:{prof:"我的资料",lvls:["🌱 新手","📘 学徒","🎯 专家","🏆 大师","👑 传奇"],xp:"经验",toNext:"距下一级",
+  maxLvl:"已达最高等级！",tests:"次测验",avgPct:"平均 %",avgPts:"平均分",best:"最佳 %",subjects:"📘 各科成绩",
+  history:"🗂 测验记录",noHist:"您还没有完成任何测验。",editName:"✏️ 修改姓名",cert:"🏅 证书",
+  certMaking:"正在生成证书…",certSent:"📩 证书已发送到机器人聊天！",story:"📲 分享到快拍",review:"📖 错题解析",
+  reviewLocked:"📖 老师关闭测验后即可查看错题解析。",onlyErr:"只看错题",allQ:"全部题目",
+  mistakes:"错题",back:"← 返回",certT:"证书",certL1:"兹证明",certL2:"完成了测验",noAns:"未作答",yours:"您的答案"}
+};
+Object.keys(T2).forEach(k => Object.assign(T[k], T2[k]));
+const T3 = {ru:{photo:"📷 Сменить фото",delPhoto:"🗑 Удалить фото",photoSaving:"Загружаю фото…"},
+ uz:{photo:"📷 Rasmni oʻzgartirish",delPhoto:"🗑 Rasmni oʻchirish",photoSaving:"Rasm yuklanmoqda…"},
+ en:{photo:"📷 Change photo",delPhoto:"🗑 Remove photo",photoSaving:"Uploading photo…"},
+ zh:{photo:"📷 更换头像",delPhoto:"🗑 删除头像",photoSaving:"正在上传头像…"}};
+Object.keys(T3).forEach(k => Object.assign(T[k], T3[k]));
+const T4 = {
+ ru:{tabT:"📝 Тесты",tabR:"🏋️ Тренажёр",trList:"Тренажёры",trEmpty:"Тренажёров пока нет. Загляните позже 🙂",
+  trStart:"▶️ Начать тренировку",trAgain:"🔁 Ещё раз",trDone:"Тренировка завершена",trBack:"🏋️ Все тренажёры",
+  trRules:["можно проходить сколько угодно раз","после ответа сразу видно — верно или нет","таймер на каждый вопрос",
+   "⚠️ свернули приложение — вопрос сгорает","в рейтинг не идёт — просто практика"],
+  runs:"попыток",bestR:"лучший",lastR:"последний",right:"✅ Верно!",wrong:"❌ Неверно",timeout:"⏰ Время вышло",
+  net:"⏳ Слабый интернет — пробую ещё раз…",share:"📤 Поделиться в чат",shareRes:"📤 Поделиться результатом",
+  trainers:"🏋️ Тренажёры",tryToo:"Пройди и ты"},
+ uz:{tabT:"📝 Testlar",tabR:"🏋️ Trenajor",trList:"Trenajorlar",trEmpty:"Hozircha trenajor yoʻq. Keyinroq kiring 🙂",
+  trStart:"▶️ Mashqni boshlash",trAgain:"🔁 Yana bir bor",trDone:"Mashq yakunlandi",trBack:"🏋️ Barcha trenajorlar",
+  trRules:["xohlagancha marta ishlash mumkin","javobdan soʻng darhol toʻgʻri yoki notoʻgʻriligi koʻrinadi","har bir savolga taymer",
+   "⚠️ ilovani yopsangiz — savol kuyadi","reytingga kirmaydi — faqat mashq"],
+  runs:"urinish",bestR:"eng yaxshi",lastR:"oxirgi",right:"✅ Toʻgʻri!",wrong:"❌ Notoʻgʻri",timeout:"⏰ Vaqt tugadi",
+  net:"⏳ Internet sust — qayta urinyapman…",share:"📤 Chatga ulashish",shareRes:"📤 Natijani ulashish",
+  trainers:"🏋️ Trenajorlar",tryToo:"Sen ham topshir"},
+ en:{tabT:"📝 Tests",tabR:"🏋️ Trainer",trList:"Trainers",trEmpty:"No trainers yet. Check back later 🙂",
+  trStart:"▶️ Start training",trAgain:"🔁 Again",trDone:"Training finished",trBack:"🏋️ All trainers",
+  trRules:["unlimited attempts","see right or wrong right after each answer","timer on every question",
+   "⚠️ leaving the app burns the question","not ranked — just practice"],
+  runs:"runs",bestR:"best",lastR:"last",right:"✅ Correct!",wrong:"❌ Wrong",timeout:"⏰ Time is up",
+  net:"⏳ Weak connection — retrying…",share:"📤 Share to chat",shareRes:"📤 Share result",
+  trainers:"🏋️ Trainers",tryToo:"Try it too"},
+ zh:{tabT:"📝 测验",tabR:"🏋️ 练习",trList:"练习",trEmpty:"暂无练习，请稍后再来 🙂",
+  trStart:"▶️ 开始练习",trAgain:"🔁 再来一次",trDone:"练习结束",trBack:"🏋️ 全部练习",
+  trRules:["可无限次练习","每题作答后立即显示对错","每题限时","⚠️ 离开应用，本题作废","不计入排名，仅供练习"],
+  runs:"次",bestR:"最佳",lastR:"最近",right:"✅ 正确！",wrong:"❌ 错误",timeout:"⏰ 时间到",
+  net:"⏳ 网络较慢，正在重试…",share:"📤 分享到聊天",shareRes:"📤 分享成绩",
+  trainers:"🏋️ 练习",tryToo:"你也来试试"}
+};
+Object.keys(T4).forEach(k => Object.assign(T[k], T4[k]));
+const T5 = {
+ ru:{subjH:"Предметы",qs:"вопросов",trs:"тренажёров",mastered:"Освоено",withErr:"С ошибкой",notYet:"Не решались",
+  byOrder:"Тесты по порядку",bankH:"Тренировка по всему банку",
+  mMist:"❌ Работа над ошибками",mMistD:"Вопросы, где последний ответ был неверным",
+  mHard:"🔥 Трудные вопросы",mHardD:"Вопросы с наибольшей долей ошибок",
+  mFav:"⭐ Избранное",mFavD:"Отмечайте трудные вопросы звёздочкой ☆",
+  mRand:"🎲 Случайные вопросы",mRandD:"Сначала нерешённые, потом ошибки. Ответ проверяется сразу",
+  mExam:"🎓 Пробный экзамен",mExamD:"Как настоящий тест: ответы и результат только в конце",
+  mCheat:"📖 Все вопросы с ответами",mCheatD:"Поиск по вопросам, для подготовки",
+  mStats:"📊 Статистика",mStatsD:"Прогресс, попытки, трудные вопросы",
+  emptyMode:"Пока пусто",howMany:"Сколько вопросов",timeH:"Время на весь экзамен",noLimit:"Без ограничения",min:"мин",
+  examRules:["вопросы из всего банка предмета","правильные ответы — только после завершения","общий таймер на весь экзамен","⚠️ свернули приложение — вопрос сгорает"],
+  randRules:["после каждого ответа видно, верно или нет","таймер на каждый вопрос","⚠️ свернули приложение — вопрос сгорает"],
+  start:"▶️ Начать",finish:"🏁 Завершить экзамен",finishSure:"Завершить экзамен? Вопросы без ответа засчитаются как ошибки.",
+  elapsed:"Прошло",remain:"Осталось",retry:"🔁 Работа над ошибками",newSet:"🎲 Новая подборка",toSubj:"📚 К предмету",
+  search:"Поиск по вопросам и ответам",found:"Найдено",fAll:"Все",fFav:"⭐ Избранное",fBad:"❌ С ошибкой",fNone:"Не решались",
+  statsH:"Статистика",answers:"ответов",accuracy:"точность",lastTries:"Последние попытки",hardest:"Самые трудные вопросы",
+  slowest:"Где вы дольше всего думаете",avgSec:"в среднем {n} с",errs:"ошибок",noSubj:"Без предмета",wrongN:"ошибок",
+  examDone:"Экзамен завершён",noStats:"Появится, когда вы порешаете вопросы",showMore:"Показать ещё",modeT:"тест",
+  modes:{t:"Тест",mist:"Работа над ошибками",hard:"Трудные вопросы",fav:"Избранное",rand:"Случайные вопросы",exam:"Пробный экзамен",retry:"Работа над ошибками"}},
+ uz:{subjH:"Fanlar",qs:"savol",trs:"trenajor",mastered:"Oʻzlashtirildi",withErr:"Xato bilan",notYet:"Yechilmagan",
+  byOrder:"Testlar tartib bilan",bankH:"Butun bank boʻyicha mashq",
+  mMist:"❌ Xatolar ustida ishlash",mMistD:"Oxirgi javob notoʻgʻri boʻlgan savollar",
+  mHard:"🔥 Qiyin savollar",mHardD:"Eng koʻp xato qilingan savollar",
+  mFav:"⭐ Saralangan",mFavD:"Qiyin savollarni yulduzcha ☆ bilan belgilang",
+  mRand:"🎲 Tasodifiy savollar",mRandD:"Avval yechilmaganlar, keyin xatolar. Javob darhol tekshiriladi",
+  mExam:"🎓 Sinov imtihoni",mExamD:"Haqiqiy test kabi: javoblar va natija faqat oxirida",
+  mCheat:"📖 Barcha savollar javoblari bilan",mCheatD:"Savollar boʻyicha qidiruv, tayyorgarlik uchun",
+  mStats:"📊 Statistika",mStatsD:"Natijalar, urinishlar, qiyin savollar",
+  emptyMode:"Hozircha boʻsh",howMany:"Nechta savol",timeH:"Butun imtihon uchun vaqt",noLimit:"Cheklovsiz",min:"daq",
+  examRules:["fanning butun bankidan savollar","toʻgʻri javoblar — faqat yakunlangandan keyin","butun imtihon uchun umumiy taymer","⚠️ ilovani yopsangiz — savol kuyadi"],
+  randRules:["har bir javobdan soʻng toʻgʻri-notoʻgʻriligi koʻrinadi","har bir savolga taymer","⚠️ ilovani yopsangiz — savol kuyadi"],
+  start:"▶️ Boshlash",finish:"🏁 Imtihonni yakunlash",finishSure:"Imtihonni yakunlaysizmi? Javobsiz savollar xato hisoblanadi.",
+  elapsed:"Oʻtdi",remain:"Qoldi",retry:"🔁 Xatolar ustida ishlash",newSet:"🎲 Yangi toʻplam",toSubj:"📚 Fanga qaytish",
+  search:"Savol va javoblar boʻyicha qidiruv",found:"Topildi",fAll:"Hammasi",fFav:"⭐ Saralangan",fBad:"❌ Xato bilan",fNone:"Yechilmagan",
+  statsH:"Statistika",answers:"javob",accuracy:"aniqlik",lastTries:"Oxirgi urinishlar",hardest:"Eng qiyin savollar",
+  slowest:"Qayerda koʻp oʻylaysiz",avgSec:"oʻrtacha {n} s",errs:"xato",noSubj:"Fansiz",wrongN:"xato",
+  examDone:"Imtihon yakunlandi",noStats:"Savollarni yechganingizdan keyin paydo boʻladi",showMore:"Yana koʻrsatish",modeT:"test",
+  modes:{t:"Test",mist:"Xatolar ustida ishlash",hard:"Qiyin savollar",fav:"Saralangan",rand:"Tasodifiy savollar",exam:"Sinov imtihoni",retry:"Xatolar ustida ishlash"}},
+ en:{subjH:"Subjects",qs:"questions",trs:"trainers",mastered:"Mastered",withErr:"With errors",notYet:"Not tried",
+  byOrder:"Tests in order",bankH:"Practice on the whole bank",
+  mMist:"❌ Fix my mistakes",mMistD:"Questions whose last answer was wrong",
+  mHard:"🔥 Hard questions",mHardD:"Questions with the highest error rate",
+  mFav:"⭐ Favorites",mFavD:"Mark hard questions with a star ☆",
+  mRand:"🎲 Random questions",mRandD:"Untried first, then mistakes. Checked instantly",
+  mExam:"🎓 Mock exam",mExamD:"Like the real test: answers and score only at the end",
+  mCheat:"📖 All questions with answers",mCheatD:"Search the questions, for revision",
+  mStats:"📊 Statistics",mStatsD:"Progress, attempts, hard questions",
+  emptyMode:"Empty for now",howMany:"How many questions",timeH:"Time for the whole exam",noLimit:"No limit",min:"min",
+  examRules:["questions from the whole subject bank","correct answers shown only at the end","one timer for the whole exam","⚠️ leaving the app burns the question"],
+  randRules:["see right or wrong after each answer","timer on every question","⚠️ leaving the app burns the question"],
+  start:"▶️ Start",finish:"🏁 Finish exam",finishSure:"Finish the exam? Unanswered questions count as wrong.",
+  elapsed:"Elapsed",remain:"Left",retry:"🔁 Fix mistakes",newSet:"🎲 New set",toSubj:"📚 Back to subject",
+  search:"Search questions and answers",found:"Found",fAll:"All",fFav:"⭐ Favorites",fBad:"❌ With errors",fNone:"Not tried",
+  statsH:"Statistics",answers:"answers",accuracy:"accuracy",lastTries:"Recent attempts",hardest:"Hardest questions",
+  slowest:"Where you think longest",avgSec:"avg {n} s",errs:"errors",noSubj:"No subject",wrongN:"wrong",
+  examDone:"Exam finished",noStats:"Will appear once you practice",showMore:"Show more",modeT:"test",
+  modes:{t:"Test",mist:"Fix mistakes",hard:"Hard questions",fav:"Favorites",rand:"Random questions",exam:"Mock exam",retry:"Fix mistakes"}},
+ zh:{subjH:"科目",qs:"题",trs:"个练习",mastered:"已掌握",withErr:"有错误",notYet:"未做",
+  byOrder:"按顺序练习",bankH:"全题库练习",
+  mMist:"❌ 错题练习",mMistD:"上次答错的题目",mHard:"🔥 难题",mHardD:"错误率最高的题目",
+  mFav:"⭐ 收藏",mFavD:"用星号 ☆ 标记难题",mRand:"🎲 随机题目",mRandD:"先做未做过的，再做错题，立即判分",
+  mExam:"🎓 模拟考试",mExamD:"像真实考试：答案和成绩最后显示",mCheat:"📖 全部题目及答案",mCheatD:"搜索题目，用于复习",
+  mStats:"📊 统计",mStatsD:"进度、记录、难题",
+  emptyMode:"暂无",howMany:"题目数量",timeH:"考试总时间",noLimit:"不限时",min:"分钟",
+  examRules:["题目来自整个科目题库","正确答案仅在结束后显示","整场考试一个计时器","⚠️ 离开应用，本题作废"],
+  randRules:["每题作答后立即显示对错","每题限时","⚠️ 离开应用，本题作废"],
+  start:"▶️ 开始",finish:"🏁 结束考试",finishSure:"结束考试？未作答的题目计为错误。",
+  elapsed:"已用",remain:"剩余",retry:"🔁 错题练习",newSet:"🎲 换一组",toSubj:"📚 返回科目",
+  search:"搜索题目和答案",found:"找到",fAll:"全部",fFav:"⭐ 收藏",fBad:"❌ 有错误",fNone:"未做",
+  statsH:"统计",answers:"次作答",accuracy:"正确率",lastTries:"最近记录",hardest:"最难的题目",
+  slowest:"思考最久的题目",avgSec:"平均 {n} 秒",errs:"错误",noSubj:"无科目",wrongN:"错",
+  examDone:"考试结束",noStats:"练习后显示",showMore:"显示更多",modeT:"测验",
+  modes:{t:"测验",mist:"错题练习",hard:"难题",fav:"收藏",rand:"随机题目",exam:"模拟考试",retry:"错题练习"}}
+};
+Object.keys(T5).forEach(k => Object.assign(T[k], T5[k]));
+const avaImg = (uid, av, cls, emoji) => av ? `<img class="${cls}" src="/avatar/${uid}.jpg?v=${av}" alt="">` : (emoji || "");
+const LET = "ABCDEFGH";
+const S = {lang:"ru", me:null, quiz:null, st:null, tick:null, busy:false, tab:"test", back:null, hiddenAt:0, left:false};
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const L = () => T[S.lang];
+const fmt = s => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
+const hap = t => { try { t === "ok" ? tg.HapticFeedback.notificationOccurred("success") : t === "bad" ? tg.HapticFeedback.notificationOccurred("error") : tg.HapticFeedback.impactOccurred("light"); } catch (e) {} };
+const INIT = tg ? tg.initData : "";
+const START = ((tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param) || new URLSearchParams(location.search).get("q") || "").toUpperCase();
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const isQ = st => st && (st.status === "question" || st.status === "tquestion");
+
+// ---------- сеть: таймаут + повтор. Никогда не «зависает» ----------
+function netMsg(on) {
+  let el = $("#net");
+  if (on && !el) { el = document.createElement("div"); el.id = "net"; el.className = "net"; el.textContent = L().net; document.body.appendChild(el); }
+  if (!on && el) el.remove();
+}
+async function api(path, body, opts) {
+  opts = opts || {};
+  const tries = opts.tries || 3;
+  for (let n = 0; n < tries; n++) {
+    const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), opts.timeout || 8000);
+    try {
+      const o = {headers: {"X-Init-Data": INIT}, signal: ctl.signal};
+      if (opts.keepalive) o.keepalive = true;
+      if (body) { o.method = "POST"; o.body = JSON.stringify(body); o.headers["Content-Type"] = "application/json"; }
+      const r = await (await fetch(path, o)).json();
+      clearTimeout(timer); netMsg(false);
+      return r;
+    } catch (e) {
+      clearTimeout(timer);
+      if (n < tries - 1) { netMsg(true); await sleep(700 * (n + 1)); }
+    }
+  }
+  return {ok: false, error: "net"};
+}
+// ждём, пока сервер ответит (для вопросов — чтобы человек не застрял)
+async function apiSure(path, body) {
+  for (let n = 0; n < 20; n++) {
+    const r = await api(path, body);
+    if (r.error !== "net") return r;
+    netMsg(true); await sleep(1500);
+  }
+  netMsg(false);
+  return {ok: false, error: "net"};
+}
+function html(h) { clearInterval(S.tick); clearTimeout(S.fbT); $("#app").innerHTML = h; window.scrollTo(0, 0); }
+
+// ---------- кнопка «Назад» (и в шапке Telegram, и на экране) ----------
+function setBack(fn) {
+  S.back = fn;
+  try {
+    if (fn) tg.BackButton.show(); else tg.BackButton.hide();
+  } catch (e) {}
+}
+if (tg && tg.BackButton) tg.BackButton.onClick(() => { if (S.back) { hap(); S.back(); } });
+const backBtn = () => `<button class="bk" id="bk">${L().back}</button>`;
+function wireBack(fn) { setBack(fn); const b = $("#bk"); if (b) b.onclick = () => { hap(); fn(); }; }
+const toList = () => { S.quiz = null; S.st = null; S.tab === "trainer" ? (S.subjName ? screenSubject(S.subjName) : screenSubjects()) : screenList(); };
+const GRACE_MS = 2500;
+
+// ---------- экраны ----------
+function screenName() {
+  const l = L();
+  html(`<div class="card"><h2>👋 ${l.name}</h2><div class="muted">${l.nameHint}</div>
+    <input id="nm" placeholder="${l.namePh}" autocomplete="name"><div class="err" id="er"></div>
+    <button class="btn" id="go">${l.save}</button></div>`);
+  setBack(null);
+  $("#go").onclick = async () => {
+    const r = await api("/api/name", {name: $("#nm").value});
+    if (!r.ok) { $("#er").textContent = r.error === "net" ? l.net : l.badName; return; }
+    S.me.name = r.name; hap("ok"); route();
+  };
+}
+async function screenList(msg) {
+  html('<div class="spin"><i></i></div>');
+  setBack(null);
+  const r = await api("/api/list");
+  S.items = (r.items || []);
+  S.msg = msg || (r.error === "net" ? L().net : "");
+  drawList();
+}
+function drawList() {
+  if (S.tab === "trainer") return screenSubjects();
+  const l = L(), tr = S.tab === "trainer";
+  const all = (S.items || []).filter(q => (q.kind === "trainer") === tr);
+  const subjects = [...new Set(all.map(q => q.subject).filter(Boolean))];
+  if (S.subj && !subjects.includes(S.subj)) S.subj = "";
+  const items = S.subj ? all.filter(q => q.subject === S.subj) : all;
+  const stat = q => tr ? (q.train ? `<span class="st ok">${l.bestR} ${q.train.best}% · ${q.train.runs}×</span>` : `<span class="st">${l.go} ›</span>`)
+    : `<span class="st ${q.result ? "ok" : ""}">${q.result ? q.result.pct + "% · " + q.result.points + "/" + q.result.max : l.go + " ›"}</span>`;
+  html(`<button class="pcard" id="pc">${S.me.av ? avaImg(S.me.uid, S.me.av, "ava") : '<span class="lv">👤</span>'}<span><b>${l.prof}</b><span>${esc(S.me.name || "")}</span></span></button>
+    <div class="tabs"><button data-t="test" class="${tr ? "" : "on"}">${l.tabT}</button><button data-t="trainer" class="${tr ? "on" : ""}">${l.tabR}</button></div>
+    <h2>${tr ? "🏋️ " + l.trList : "📚 " + l.list}</h2>${S.msg ? `<div class="err">${S.msg}</div>` : ""}
+    ${subjects.length > 1 ? `<div class="chips"><button data-s="" class="${S.subj ? "" : "on"}">${l.all}</button>${subjects.map(x =>
+      `<button data-s="${esc(x)}" class="${S.subj === x ? "on" : ""}">${esc(x)}</button>`).join("")}</div>` : ""}
+    ${items.length ? items.map(q => `<button class="qitem" data-c="${q.code}"><span class="ic">${tr ? "🏋️" : (q.result ? "✅" : "📝")}</span>
+      <span class="tt">${q.subject ? `<span class="subj">${esc(q.subject)}</span>` : ""}<b>${esc(q.title)}</b>
+      <span>${q.n} ${l.q} · ${q.sec} ${l.sec}</span></span>${stat(q)}</button>`).join("")
+      : `<div class="card muted" style="text-align:center">${tr ? l.trEmpty : l.empty}</div>`}`);
+  setBack(null);
+  $("#pc").onclick = () => { hap(); screenProfile(); };
+  document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => { hap(); S.tab = b.dataset.t; S.subj = ""; S.msg = ""; drawList(); });
+  document.querySelectorAll(".chips button").forEach(b => b.onclick = () => { S.subj = b.dataset.s; drawList(); });
+  document.querySelectorAll(".qitem").forEach(b => b.onclick = () => {
+    hap(); S.quiz = items.find(q => q.code === b.dataset.c); screenIntro();
+  });
+}
+function screenIntro() {
+  const l = L(), q = S.quiz;
+  if (q.kind === "trainer") return screenTrIntro();
+  if (q.result) return screenDone({result: q.result, title: q.title, subject: q.subject, code: q.code, review: q.review}, true);
+  if (!q.open) return screenList(l.closed);
+  html(`${backBtn()}<div class="card">${q.subject ? `<span class="subj">${l.subjL}: ${esc(q.subject)}</span>` : ""}<h2>📝 ${esc(q.title)}</h2>
+    <div class="facts"><div><b>${q.n}</b><span>${l.q}</span></div><div><b>${q.sec}</b><span>${l.sec}</span></div><div><b>${q.max || 50}</b><span>${l.pts}</span></div></div>
+    <ul class="rules">${l.rules.map(x => `<li>${x}</li>`).join("")}</ul>
+    <div class="muted">${l.participant}: <b>${esc(S.me.name)}</b></div>
+    <button class="btn" id="go">${l.start}</button></div>`);
+  wireBack(toList);
+  $("#go").onclick = async () => {
+    hap(); $("#go").disabled = true;
+    const r = await api("/api/start", {code: q.code});
+    if (!r.ok) {
+      if (r.error === "done") { const x = await api("/api/result?q=" + q.code); return screenDone({result: x.result, top: x.top, title: q.title, code: q.code}, true); }
+      if (r.error === "net") { $("#go").disabled = false; return; }
+      return screenList(L()[r.error === "closed" ? "closed" : "noQuiz"]);
+    }
+    show(r.state);
+  };
+}
+
+// ---------- вопрос (общий для теста и тренажёра) ----------
+function screenQuestion(st) {
+  const l = L(), tr = st.status === "tquestion", exam = !!st.exam;
+  S.busy = false;
+  const clock = exam ? `<div class="timer wide" id="tm"></div>` : `<div class="timer" id="tm">${Math.ceil(st.left)}</div>`;
+  html(`<div class="top"><div class="muted">${tr ? (exam ? "🎓 " : "🏋️ ") : ""}${l.question} <b>${st.i + 1}</b> ${l.of} ${st.n}</div>
+    <div class="tr">${tr ? `<button class="star ${st.fav ? "on" : ""}" id="star" aria-label="★">${st.fav ? "★" : "☆"}</button>` : ""}${clock}</div></div>
+    <div class="prog"><i style="width:${100 * st.i / st.n}%"></i></div>
+    <div class="card"><div class="qtext">${esc(st.text)}</div>
+    ${st.opts.map((o, k) => `<button class="opt" data-k="${k}"><b>${LET[k]}</b><span>${esc(o)}</span></button>`).join("")}
+    ${tr && !exam ? `<div class="fb" id="fb"></div>` : ""}</div>
+    ${exam ? `<button class="btn ghost" id="fin">${l.finish}</button>` : ""}`);
+  setBack(null);                                   // во время вопроса «назад» нет
+  if (exam) {
+    const t0 = Date.now();
+    const tick = () => {
+      const el = $("#tm"); if (!el) return;
+      if (st.left == null) { el.textContent = "⏱ " + fmt(st.elapsed + (Date.now() - t0) / 1000); return; }
+      const left = Math.max(0, st.left - (Date.now() - t0) / 1000);
+      el.textContent = "⏳ " + fmt(left); el.classList.toggle("warn", left <= 60);
+      if (left <= 0 && !S.busy) { clearInterval(S.tick); S.busy = true; setTimeout(() => { S.busy = false; resync(); }, (GRACE_MS || 2500)); }
+    };
+    tick(); S.tick = setInterval(tick, 500);
+    $("#fin").onclick = () => {
+      const go = async ok => { if (!ok) return; S.busy = true; clearInterval(S.tick); const r = await apiSure("/api/tfinish", {}); S.busy = false; r.ok ? show(r.state) : resync(); };
+      try { tg.showConfirm(l.finishSure, go); } catch (e) { go(confirm(l.finishSure)); }
+    };
+  } else {
+    const end = Date.now() + st.left * 1000;
+    S.tick = setInterval(() => {
+      const left = Math.max(0, (end - Date.now()) / 1000);
+      const el = $("#tm"); if (!el) return;
+      el.textContent = Math.ceil(left); el.classList.toggle("warn", left <= 5);
+      if (left <= 0 && !S.busy) { clearInterval(S.tick); send(st, -1); }   // время вышло — сообщаем серверу сразу
+    }, 250);
+  }
+  if ($("#star")) $("#star").onclick = async () => {
+    hap(); const r = await api("/api/tfav", {i: st.i});
+    if (r.ok) { st.fav = r.fav; const b = $("#star"); if (b) { b.textContent = r.fav ? "★" : "☆"; b.classList.toggle("on", r.fav); } }
+  };
+  document.querySelectorAll(".opt").forEach(b => b.onclick = () => {
+    if (S.busy) return; b.classList.add("sel"); hap(); send(st, +b.dataset.k);
+  });
+}
+async function send(st, k) {
+  if (S.busy) return;
+  S.busy = true; clearInterval(S.tick);
+  document.querySelectorAll(".opt").forEach(b => b.disabled = true);
+  const tr = st.status === "tquestion";
+  const r = await apiSure(tr ? "/api/tanswer" : "/api/answer", {i: st.i, k});
+  if (!r.ok) { S.busy = false; return resync(); }
+  if (tr && !st.exam) return feedback(st, r.state, k);
+  S.busy = false; show(r.state);
+}
+// тренажёр: сразу показываем верно / неверно, потом следующий вопрос
+function feedback(st, nx, k) {
+  const l = L(), fb = nx.fb;
+  if (!fb || fb.i !== st.i) { S.busy = false; return nx.status === "tnext" ? resync() : show(nx); }
+  const opts = document.querySelectorAll(".opt");
+  opts.forEach((b, j) => { b.classList.remove("sel"); if (j === fb.right) b.classList.add("right"); else if (j === fb.chosen) b.classList.add("wrong"); });
+  const el = $("#fb");
+  if (el) { el.textContent = fb.ok ? l.right : (fb.chosen < 0 ? l.timeout : l.wrong); el.className = "fb " + (fb.ok ? "ok" : "bad"); }
+  hap(fb.ok ? "ok" : "bad");
+  S.fbT = setTimeout(async () => {
+    S.busy = false;
+    if (nx.status === "tdone") return show(nx);
+    const r = await apiSure("/api/tstate");
+    r.ok ? show(r.state) : resync();
+  }, fb.ok ? 1100 : 2000);
+}
+async function resync() {
+  const tr = S.st && String(S.st.status).startsWith("t");
+  const r = await apiSure(tr ? "/api/tstate" : "/api/state");
+  if (r.ok) return show(r.state);
+  html(`<div class="card muted" style="text-align:center">${L().net}</div><button class="btn" id="rt">🔄</button>`);
+  $("#rt").onclick = resync;
+}
+
+function screenDone(st, already) {
+  const l = L(), r = st.result || {};
+  const me = S.me.name;
+  html(`${backBtn()}<div class="card" style="text-align:center"><h2>${already ? "✅ " + l.already : "🏁 " + l.done}</h2>
+    <div class="muted">${esc(st.title || "")}</div>
+    <div class="big">${r.pct ?? 0}%</div>
+    <div class="facts"><div><b>${r.points ?? 0}/${r.max ?? 50}</b><span>${l.pts}</span></div>
+    <div><b>${r.score ?? 0}/${r.total ?? 0}</b><span>${l.corr}</span></div>
+    <div><b>${r.place ?? "—"}</b><span>${l.place} ${l.of} ${r.all ?? "—"}</span></div></div>
+    <div class="muted">⏱ ${l.time}: ${fmt(r.time || 0)}</div>
+    ${r.left ? `<div class="warnbox">${l.left.replace("{n}", r.left)}</div>` : ""}
+    <div class="btns"><button class="btn" id="cert">${l.cert}</button><button class="btn ghost" id="prof">👤 ${l.prof}</button></div>
+    <div id="certmsg" class="muted" style="margin-top:8px"></div>
+    ${st.review ? `<button class="btn ghost" id="rev">${l.review}</button>` : `<div class="muted" style="margin-top:10px">${l.reviewLocked}</div>`}</div>
+    ${st.top && st.top.length ? `<div class="card"><b>${l.top}</b><div class="lb">${st.top.map((t, i) =>
+      `<div class="${t.name === me ? "me" : ""}"><span>${["🥇","🥈","🥉"][i] || (i + 1) + "."} ${avaImg(t.uid, t.av, "avs")}${esc(t.name)}</span><span>${t.pct}% · ${t.points}/50 · ${fmt(t.time)}</span></div>`).join("")}</div></div>` : ""}
+    <button class="btn ghost" id="again">${l.another}</button>`);
+  wireBack(toList);
+  $("#again").onclick = toList;
+  $("#prof").onclick = () => screenProfile();
+  $("#cert").onclick = () => makeCert(st);
+  if ($("#rev")) $("#rev").onclick = () => screenReview(st.code, st.title);
+  if (!already) hap("ok");
+}
+// ---------- тренажёр ----------
+function screenTrIntro() {
+  const l = L(), q = S.quiz, t = q.train;
+  if (!q.open) return screenList(l.closed);
+  html(`${backBtn()}<div class="card">${q.subject ? `<span class="subj">${l.subjL}: ${esc(q.subject)}</span>` : ""}<h2>🏋️ ${esc(q.title)}</h2>
+    <div class="facts"><div><b>${q.n}</b><span>${l.q}</span></div><div><b>${q.sec}</b><span>${l.sec}</span></div>
+    <div><b>${t ? t.best + "%" : "—"}</b><span>${l.bestR}${t ? " · " + t.runs + " " + l.runs : ""}</span></div></div>
+    <ul class="rules">${l.trRules.map(x => `<li>${x}</li>`).join("")}</ul>
+    <button class="btn" id="go">${l.trStart}</button></div>`);
+  wireBack(toList);
+  $("#go").onclick = () => trStart(q.code);
+}
+async function trStart(code) { return startMode({mode: "t", code}); }
+function screenTrDone(st) {
+  const l = L(), r = st.result || {}, exam = st.mode === "exam";
+  const bad = (st.items || []).filter(x => !x.ok).length;
+  const third = r.best != null ? `<div><b>${r.best}%</b><span>${l.bestR} · ${r.runs} ${l.runs}</span></div>`
+    : `<div><b>${bad}</b><span>${l.wrongN}</span></div>`;
+  html(`${backBtn()}<div class="card" style="text-align:center"><h2>${exam ? "🎓 " + l.examDone : "🏋️ " + l.trDone}</h2>
+    <div class="muted">${esc(st.mode === "t" ? st.title : (l.modes[st.mode] || st.title))}${st.subject && st.subject !== "—" && st.mode !== "t" ? " · " + esc(st.subject) : ""}</div>
+    <div class="big">${r.pct ?? 0}%</div>
+    <div class="facts"><div><b>${r.points ?? 0}/${r.max ?? 50}</b><span>${l.pts}</span></div>
+    <div><b>${r.score ?? 0}/${r.total ?? 0}</b><span>${l.corr}</span></div>${third}</div>
+    <div class="muted">⏱ ${l.time}: ${fmt(r.time || 0)}</div>
+    ${r.left ? `<div class="warnbox">${l.left.replace("{n}", r.left)}</div>` : ""}
+    ${bad ? `<button class="btn" id="retry">${l.retry} (${bad})</button>` : ""}
+    ${(st.items || []).length ? `<button class="btn ghost" id="rev">${l.review}${exam ? "" : ` (${bad})`}</button>` : ""}
+    <button class="btn ghost" id="again">${st.mode === "t" ? l.trAgain : (st.mode === "rand" || exam ? l.newSet : l.trAgain)}</button>
+    <button class="btn ghost" id="lst">${st.subject || S.subjName ? l.toSubj : l.trBack}</button></div>`);
+  const name = st.subject || S.subjName;
+  const out = async () => { await api("/api/tstop", {}); S.tab = "trainer"; S.quiz = null; S.st = null; name ? screenSubject(name || "—") : screenSubjects(); };
+  wireBack(out);
+  $("#lst").onclick = out;
+  $("#again").onclick = () => st.mode === "t" ? startMode({mode: "t", code: st.code})
+    : startMode(S.lastParams && S.lastParams.mode === st.mode ? S.lastParams : {mode: st.mode, subject: name});
+  if ($("#retry")) $("#retry").onclick = () => startMode({mode: "retry"});
+  if ($("#rev")) $("#rev").onclick = () => drawReview(st.items, st.title, !exam, () => screenTrDone(st));
+  hap("ok");
+}
+
+// ---------- тренажёр: предметы ----------
+const stackBar = (ok, bad, total) => `<div class="stack"><i class="ok" style="width:${total ? 100 * ok / total : 0}%"></i><i class="bad" style="width:${total ? 100 * bad / total : 0}%"></i></div>`;
+const legend = (ok, bad, total) => { const l = L(); return `<div class="legend"><span class="lok">${l.mastered}: <b>${ok}</b></span><span class="lbad">${l.withErr}: <b>${bad}</b></span><span>${l.notYet}: <b>${Math.max(0, total - ok - bad)}</b></span></div>`; };
+const subjName = n => n === "—" ? L().noSubj : n;
+async function screenSubjects() {
+  const l = L();
+  S.subjName = null;
+  html('<div class="spin"><i></i></div>');
+  const r = await api("/api/subjects");
+  const items = r.items || [];
+  html(`<button class="pcard" id="pc">${S.me.av ? avaImg(S.me.uid, S.me.av, "ava") : '<span class="lv">👤</span>'}<span><b>${l.prof}</b><span>${esc(S.me.name || "")}</span></span></button>
+    <div class="tabs"><button data-t="test">${l.tabT}</button><button data-t="trainer" class="on">${l.tabR}</button></div>
+    <h2>🏋️ ${l.subjH}</h2>${r.error === "net" ? `<div class="err">${l.net}</div>` : ""}
+    ${items.length ? items.map((x, i) => `<button class="scard" data-i="${i}"><b>${esc(subjName(x.name))}</b>
+      <span class="muted">${x.trainers} ${l.trs} · ${x.total} ${l.qs}</span>${stackBar(x.ok, x.bad, x.total)}${legend(x.ok, x.bad, x.total)}</button>`).join("")
+      : `<div class="card muted" style="text-align:center">${l.trEmpty}</div>`}`);
+  setBack(null);
+  $("#pc").onclick = () => { hap(); screenProfile(); };
+  document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => { hap(); S.tab = b.dataset.t; S.subj = ""; S.msg = ""; S.tab === "trainer" ? screenSubjects() : screenList(); });
+  document.querySelectorAll(".scard").forEach(b => b.onclick = () => { hap(); screenSubject(items[+b.dataset.i].name); });
+}
+async function screenSubject(name) {
+  const l = L();
+  S.subjName = name; S.quiz = null;
+  html('<div class="spin"><i></i></div>');
+  const r = await api("/api/subject?s=" + encodeURIComponent(name));
+  if (!r.ok) return screenSubjects();
+  const x = r.subject;
+  const row = (id, t, d, n, on) => `<button class="mrow" data-m="${id}" ${on ? "" : "disabled"}><span><b>${t}</b><span>${d}${n != null ? ` · <b>${n}</b>` : ""}</span></span><span class="go">${on ? "›" : ""}</span></button>`;
+  html(`${backBtn()}<h2>${esc(subjName(x.name))}</h2>
+    <div class="card">${stackBar(x.ok, x.bad, x.total)}${legend(x.ok, x.bad, x.total)}</div>
+    <h3>${l.byOrder}</h3>
+    ${x.trainers.map(q => `<button class="qitem" data-c="${q.code}"><span class="ic">🏋️</span><span class="tt"><b>${esc(q.title)}</b>
+      <span>${q.n} ${l.q} · ${q.sec} ${l.sec}</span></span>${q.train ? `<span class="st ok">${l.bestR} ${q.train.best}% · ${q.train.runs}×</span>` : `<span class="st">${l.go} ›</span>`}</button>`).join("")}
+    <h3>${l.bankH}</h3>
+    <div class="mlist">
+    ${row("mist", l.mMist, x.mist ? l.mMistD : l.emptyMode, x.mist || null, x.mist > 0)}
+    ${row("hard", l.mHard, x.hard ? l.mHardD : l.emptyMode, x.hard || null, x.hard > 0)}
+    ${row("fav", l.mFav, l.mFavD, x.fav || null, x.fav > 0)}
+    ${row("rand", l.mRand, l.mRandD, null, x.total > 0)}
+    ${row("exam", l.mExam, l.mExamD, null, x.total > 0)}
+    ${row("cheat", l.mCheat, l.mCheatD, x.total, x.total > 0)}
+    ${row("stats", l.mStats, l.mStatsD, null, true)}</div>`);
+  wireBack(screenSubjects);
+  document.querySelectorAll(".qitem").forEach(b => b.onclick = () => {
+    hap(); const q = x.trainers.find(z => z.code === b.dataset.c);
+    S.quiz = {...q, kind: "trainer", open: true, subject: x.name === "—" ? "" : x.name}; screenTrIntro();
+  });
+  document.querySelectorAll(".mrow").forEach(b => b.onclick = () => {
+    hap(); const m = b.dataset.m;
+    if (m === "cheat") return screenCheat(name);
+    if (m === "stats") return screenTStats(name);
+    if (m === "rand" || m === "exam") return screenSetup(m, name, x);
+    startMode({mode: m, subject: name});
+  });
+}
+function screenSetup(mode, name, x) {
+  const l = L(), exam = mode === "exam";
+  const counts = exam ? [25, 50, 100] : [20, 50, 100];
+  S.setN = S.setN && counts.includes(S.setN) ? S.setN : (exam ? 50 : 20);
+  S.setM = S.setM ?? 0;
+  const draw = () => {
+    const est = Math.max(5, Math.round(S.setN * (x.sec || 30) / 60));
+    const times = [[0, l.noLimit], [est, "≈ " + est + " " + l.min], [30, "30 " + l.min], [60, "60 " + l.min]];
+    html(`${backBtn()}<div class="card"><span class="subj">${esc(subjName(name))}</span><h2>${exam ? l.mExam : l.mRand}</h2>
+      <div class="lbl">${l.howMany}</div><div class="seg">${counts.map(n => `<button data-n="${n}" class="${S.setN === n ? "on" : ""}">${Math.min(n, x.total)}</button>`).join("")}</div>
+      ${exam ? `<div class="lbl">${l.timeH}</div><div class="seg">${times.map(t => `<button data-t="${t[0]}" class="${S.setM === t[0] ? "on" : ""}">${t[1]}</button>`).join("")}</div>` : ""}
+      <ul class="rules">${(exam ? l.examRules : l.randRules).map(r => `<li>${r}</li>`).join("")}</ul>
+      <button class="btn" id="go">${l.start}</button></div>`);
+    wireBack(() => screenSubject(name));
+    document.querySelectorAll(".seg button[data-n]").forEach(b => b.onclick = () => { S.setN = +b.dataset.n; draw(); });
+    document.querySelectorAll(".seg button[data-t]").forEach(b => b.onclick = () => { S.setM = +b.dataset.t; draw(); });
+    $("#go").onclick = () => startMode({mode, subject: name, n: S.setN, mins: exam ? S.setM : 0});
+  };
+  draw();
+}
+async function startMode(p) {
+  hap();
+  const b = $("#go"); if (b) b.disabled = true;
+  S.lastParams = p;
+  const r = await api("/api/tstart", p);
+  if (!r.ok) {
+    if (b) b.disabled = false;
+    if (r.error === "net") return;
+    return S.subjName ? screenSubject(S.subjName) : screenSubjects();
+  }
+  show(r.state);
+}
+function hl(text, q) {
+  const t = esc(text);
+  if (!q) return t;
+  const i = t.toLowerCase().indexOf(esc(q).toLowerCase());
+  return i < 0 ? t : t.slice(0, i) + "<mark>" + t.slice(i, i + esc(q).length) + "</mark>" + t.slice(i + esc(q).length);
+}
+async function screenCheat(name) {
+  const l = L();
+  html('<div class="spin"><i></i></div>');
+  const r = await api("/api/cheat?s=" + encodeURIComponent(name));
+  const all = r.items || [];
+  let q = "", f = "all", lim = 60;
+  html(`${backBtn()}<h2>📖 ${esc(subjName(name))}</h2>
+    <input id="sq" placeholder="${l.search}" autocomplete="off">
+    <div class="chips" style="margin-top:10px">${[["all", l.fAll], ["fav", l.fFav], ["bad", l.fBad], ["none", l.fNone]].map(c =>
+      `<button data-f="${c[0]}" class="${c[0] === "all" ? "on" : ""}">${c[1]}</button>`).join("")}</div>
+    <div id="cl"></div>`);
+  wireBack(() => screenSubject(name));
+  const draw = () => {
+    const s = q.trim().toLowerCase();
+    const list = all.filter(x => (f === "all" || (f === "fav" && x.fav) || (f === "bad" && x.st === 0) || (f === "none" && x.st === null))
+      && (!s || x.q.toLowerCase().includes(s) || x.a.toLowerCase().includes(s)));
+    $("#cl").innerHTML = `<div class="muted">${l.found}: <b>${list.length}</b></div>` + list.slice(0, lim).map(x =>
+      `<div class="rq"><div class="qq">${x.fav ? "⭐ " : ""}${x.st === 0 ? "❌ " : x.st === 1 ? "✅ " : ""}${hl(x.q, s)}</div><div class="ro right">✅ ${hl(x.a, s)}</div></div>`).join("")
+      + (list.length > lim ? `<button class="btn ghost" id="more">${l.showMore}</button>` : "");
+    if ($("#more")) $("#more").onclick = () => { lim += 100; draw(); };
+  };
+  $("#sq").oninput = e => { q = e.target.value; lim = 60; draw(); };
+  document.querySelectorAll(".chips button").forEach(b => b.onclick = () => {
+    f = b.dataset.f; lim = 60; document.querySelectorAll(".chips button").forEach(x => x.classList.toggle("on", x === b)); draw();
+  });
+  draw();
+}
+async function screenTStats(name) {
+  const l = L();
+  html('<div class="spin"><i></i></div>');
+  const r = await api("/api/tstats?s=" + encodeURIComponent(name));
+  if (!r.ok) return screenSubject(name);
+  const x = r.stats, acc = x.answers ? Math.round(100 * x.right / x.answers) : 0;
+  html(`${backBtn()}<h2>📊 ${esc(subjName(name))}</h2>
+    <div class="facts"><div><b>${x.answers}</b><span>${l.answers}</span></div><div><b>${acc}%</b><span>${l.accuracy}</span></div><div><b>${x.ok}/${x.total}</b><span>${l.mastered}</span></div></div>
+    <div class="card">${stackBar(x.ok, x.bad, x.total)}${legend(x.ok, x.bad, x.total)}</div>
+    <div class="card"><b>${l.byOrder}</b><div class="lb">${x.trainers.map(t => `<div><span>${esc(t.title)}</span><span>${t.train ? `${l.bestR} ${t.train.best}% · ${t.train.runs}×` : "—"}</span></div>`).join("")}</div></div>
+    <div class="card"><b>${l.lastTries}</b>${x.hist.length ? `<div class="lb">${x.hist.map(h => `<div><span>${esc(l.modes[h.mode] || h.title)}<br><span class="muted">${esc(h.date)}${h.mode === "t" ? " · " + esc(h.title) : ""}</span></span><span><b>${h.pct}%</b> · ${h.score}/${h.total}</span></div>`).join("")}</div>` : `<div class="muted">${l.noStats}</div>`}</div>
+    <div class="card"><b>${l.hardest}</b>${x.hard.length ? x.hard.map(h => `<div class="rq"><div class="qq">${esc(h.q)}</div><div class="ro right">✅ ${esc(h.a)}</div><div class="muted">${l.errs}: ${h.w} · ✅ ${h.c}</div></div>`).join("") : `<div class="muted">${l.noStats}</div>`}</div>
+    ${x.slow.length ? `<div class="card"><b>${l.slowest}</b>${x.slow.map(h => `<div class="rq"><div class="qq">${esc(h.q)}</div><div class="muted">⏱ ${l.avgSec.replace("{n}", h.avg)}</div></div>`).join("")}</div>` : ""}`);
+  wireBack(() => screenSubject(name));
+}
+
+// ---------- профиль ----------
+async function screenProfile() {
+  const l = L();
+  html('<div class="spin"><i></i></div>');
+  const pr = await api("/api/profile");
+  if (!pr.ok) return screenList(l.net);
+  const p = pr.profile;
+  const span = p.lvl_to ? p.lvl_to - p.lvl_from : 1, done = p.lvl_to ? (p.xp - p.lvl_from) / span : 1;
+  const trs = p.trainers || [];
+  html(`${backBtn()}
+    <div class="pcard" style="cursor:default">${p.av ? avaImg(p.uid, p.av, "ava") : `<span class="lv">${l.lvls[p.level].split(" ")[0]}</span>`}
+      <span><b>${esc(p.name || "")}</b><span>${l.lvls[p.level].split(" ").slice(1).join(" ")} · ${p.xp} ${l.xp}</span></span></div>
+    <div class="bar"><i style="width:${Math.round(done * 100)}%"></i></div>
+    <div class="muted">${p.lvl_to ? `${p.lvl_to - p.xp} ${l.xp} ${l.toNext}` : l.maxLvl}</div>
+    <div class="facts"><div><b>${p.tests}</b><span>${l.tests}</span></div><div><b>${p.avg_pct}%</b><span>${l.avgPct}</span></div>
+      <div><b>${p.avg_points}/50</b><span>${l.avgPts}</span></div></div>
+    ${p.subjects.length ? `<div class="card"><b>${l.subjects}</b>${p.subjects.map(x => `<div class="srow"><div><span>${esc(x[0])}</span>
+      <span>${x[1]}% · ${x[2]}</span></div><div class="bar"><i style="width:${x[1]}%"></i></div></div>`).join("")}</div>` : ""}
+    <div class="card"><b>${l.history}</b>${p.history.length ? p.history.map(h => `<button class="qitem" data-c="${h.code}">
+      <span class="tt">${h.subject ? `<span class="subj">${esc(h.subject)}</span>` : ""}<b>${esc(h.title)}</b><span>${h.date} · ${l.place} ${h.place}/${h.all}</span></span>
+      <span class="st ok">${h.pct}% · ${h.points}/50</span></button>`).join("") : `<div class="muted">${l.noHist}</div>`}</div>
+    ${trs.length ? `<div class="card"><b>${l.trainers}</b>${trs.map(h => `<button class="qitem" data-c="${h.code}">
+      <span class="tt">${h.subject ? `<span class="subj">${esc(h.subject)}</span>` : ""}<b>${esc(h.title)}</b><span>${h.runs} ${l.runs} · ${l.lastR} ${h.last}%</span></span>
+      <span class="st ok">${l.bestR} ${h.best}%</span></button>`).join("")}</div>` : ""}
+    <div class="btns"><button class="btn ghost" id="ph">${l.photo}</button><button class="btn ghost" id="ren">${l.editName}</button></div>
+    ${p.av ? `<button class="btn ghost" id="delph">${l.delPhoto}</button>` : ""}
+    <div id="phmsg" class="muted" style="margin-top:6px"></div>
+    <input type="file" id="phf" accept="image/*" class="hidden">`);
+  wireBack(toList);
+  $("#ph").onclick = () => $("#phf").click();
+  $("#phf").onchange = e => { if (e.target.files[0]) uploadAvatar(e.target.files[0]); };
+  if ($("#delph")) $("#delph").onclick = () => saveAvatar("");
+  $("#ren").onclick = () => { S.me.name = ""; screenName(); };
+  document.querySelectorAll(".qitem").forEach(b => b.onclick = async () => {
+    const r = await api("/api/quiz?q=" + b.dataset.c); if (r.ok) { S.quiz = r.quiz; screenIntro(); }
+  });
+}
+
+// ---------- аватарка: обрезаем в квадрат 320×320 и отправляем ----------
+async function uploadAvatar(file) {
+  $("#phmsg").textContent = L().photoSaving;
+  try {
+    const img = new Image(); img.src = URL.createObjectURL(file);
+    await new Promise((ok, no) => { img.onload = ok; img.onerror = no; });
+    const N = 320, c = document.createElement("canvas"); c.width = c.height = N;
+    const m = Math.min(img.naturalWidth, img.naturalHeight);
+    c.getContext("2d").drawImage(img, (img.naturalWidth - m) / 2, (img.naturalHeight - m) / 2, m, m, 0, 0, N, N);
+    await saveAvatar(c.toDataURL("image/jpeg", 0.85));
+  } catch (e) { $("#phmsg").textContent = "❗ " + (e && e.message || "error"); }
+}
+async function saveAvatar(data) {
+  const r = await api("/api/avatar", {img: data}, {timeout: 20000, tries: 2});
+  if (!r.ok) { $("#phmsg").textContent = "❗ " + (r.error === "net" ? L().net : (r.error || "error")); return; }
+  S.me.av = r.av; hap("ok"); screenProfile();
+}
+
+// ---------- разбор ошибок ----------
+async function screenReview(code, title) {
+  const l = L();
+  html('<div class="spin"><i></i></div>');
+  const r = await api("/api/review?q=" + code);
+  const back = async () => { const q = await api("/api/quiz?q=" + code); if (q.ok) { S.quiz = q.quiz; screenIntro(); } else toList(); };
+  if (!r.ok) { html(`${backBtn()}<div class="card muted">${l.reviewLocked}</div>`); return wireBack(back); }
+  drawReview(r.items, title, true, back);
+}
+function drawReview(all, title, only, back) {
+  const l = L();
+  const bad = all.filter(x => !x.ok).length, items = only ? all.filter(x => !x.ok) : all;
+  html(`${backBtn()}<h2>📖 ${esc(title || "")}</h2>
+    <div class="muted">${l.mistakes}: <b class="bad">${bad}</b> / ${all.length}</div>
+    <div class="chips" style="margin-top:8px"><button data-o="1" class="${only ? "on" : ""}">${l.onlyErr}</button>
+      <button data-o="0" class="${only ? "" : "on"}">${l.allQ}</button></div>
+    ${items.map(x => `<div class="rq"><div class="qq">${x.ok ? "✅" : "❌"} ${esc(x.q)}</div>${x.opts.map((o, k) =>
+      `<div class="ro ${k === x.right ? "right" : (k === x.chosen ? "wrong" : "")}">${k === x.right ? "✅" : (k === x.chosen ? "❌" : "▫️")} ${esc(o)}
+      ${k === x.chosen && k !== x.right ? `<span class="muted"> — ${l.yours}</span>` : ""}</div>`).join("")}
+      ${x.chosen === -1 ? `<div class="muted">⏰ ${l.noAns}</div>` : ""}</div>`).join("")}`);
+  wireBack(back);
+  document.querySelectorAll(".chips button").forEach(b => b.onclick = () => drawReview(all, title, b.dataset.o === "1", back));
+}
+
+// ---------- сертификат ----------
+function wrapText(ctx, text, x, y, maxW, lh, maxLines) {
+  const words = String(text).split(" "); let line = "", lines = [];
+  for (const w of words) { const t = line ? line + " " + w : w; if (ctx.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t; }
+  if (line) lines.push(line);
+  lines = lines.slice(0, maxLines);
+  lines.forEach((ln, i) => ctx.fillText(ln, x, y + i * lh));
+  return y + lines.length * lh;
+}
+function shareLink(text, url) {
+  const u = "https://t.me/share/url?url=" + encodeURIComponent(url || "") + "&text=" + encodeURIComponent(text || "");
+  try { tg.openTelegramLink(u); } catch (e) { location.href = u; }
+}
+async function makeCert(st) {
+  const l = L(), r = st.result || {}, msg = $("#certmsg");
+  msg.textContent = l.certMaking;
+  const W = 1080, H = 1350, c = document.createElement("canvas"); c.width = W; c.height = H;
+  const x = c.getContext("2d"), F = '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif';
+  x.fillStyle = "#ffffff"; x.fillRect(0, 0, W, H);
+  const g = x.createLinearGradient(0, 0, W, 0); g.addColorStop(0, "#0b3a8a"); g.addColorStop(1, "#1f63d6");
+  x.fillStyle = g; x.fillRect(0, 0, W, 300);
+  x.strokeStyle = "#1f63d6"; x.lineWidth = 14; x.strokeRect(30, 30, W - 60, H - 60);
+  x.strokeStyle = "#c9a227"; x.lineWidth = 4; x.strokeRect(56, 56, W - 112, H - 112);
+  try {
+    const img = new Image(); img.src = "/logo";
+    await new Promise((ok, no) => { img.onload = ok; img.onerror = no; });
+    x.save(); x.beginPath(); x.arc(W / 2, 300, 110, 0, Math.PI * 2); x.fillStyle = "#fff"; x.fill(); x.clip();
+    x.drawImage(img, W / 2 - 100, 200, 200, 200); x.restore();
+  } catch (e) {}
+  x.textAlign = "center"; x.fillStyle = "#ffffff"; x.font = `800 54px ${F}`; x.fillText("TSUE QUIZ", W / 2, 140);
+  x.fillStyle = "#0b1f44"; x.font = `800 76px ${F}`; x.fillText(l.certT, W / 2, 500);
+  x.fillStyle = "#5d6f92"; x.font = `400 36px ${F}`; x.fillText(l.certL1, W / 2, 560);
+  x.fillStyle = "#1f63d6"; x.font = `800 64px ${F}`; wrapText(x, S.me.name || "", W / 2, 650, W - 180, 70, 2);
+  x.fillStyle = "#5d6f92"; x.font = `400 36px ${F}`; x.fillText(l.certL2, W / 2, 730);
+  x.fillStyle = "#0b1f44"; x.font = `700 42px ${F}`;
+  let y = wrapText(x, "«" + (st.title || "") + "»", W / 2, 795, W - 180, 52, 3);
+  if (st.subject) { x.fillStyle = "#5d6f92"; x.font = `600 32px ${F}`; x.fillText(st.subject, W / 2, y + 8); y += 40; }
+  const cy = Math.min(1080, Math.max(1030, y + 150));
+  x.beginPath(); x.arc(W / 2, cy, 115, 0, Math.PI * 2); x.fillStyle = "#eaf1ff"; x.fill();
+  x.lineWidth = 14; x.strokeStyle = "#1f63d6"; x.beginPath();
+  x.arc(W / 2, cy, 115, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (r.pct || 0) / 100); x.stroke();
+  x.fillStyle = "#1f63d6"; x.font = `800 70px ${F}`; x.fillText((r.pct ?? 0) + "%", W / 2, cy + 24);
+  x.fillStyle = "#0b1f44"; x.font = `800 44px ${F}`;
+  x.fillText(`${r.points ?? 0}/${r.max ?? 50}`, 205, cy - 5); x.fillText(`${r.score ?? 0}/${r.total ?? 0}`, W - 205, cy - 5);
+  x.fillStyle = "#5d6f92"; x.font = `400 26px ${F}`;
+  x.fillText(l.pts, 205, cy + 35, 250); x.fillText(l.corr, W - 205, cy + 35, 250);
+  x.font = `400 28px ${F}`;
+  x.fillText(`${l.place}: ${r.place ?? "—"} / ${r.all ?? "—"}  ·  ${new Date().toLocaleDateString()}`, W / 2, 1250);
+  let res = {};
+  try {
+    const img = c.toDataURL("image/jpeg", 0.85);
+    // без keepalive: у keepalive-запросов предел 64 КБ, а картинка больше
+    res = await api("/api/cert", {code: st.code, img}, {timeout: 30000, tries: 2});
+    if (!res.ok) throw 0;
+    msg.innerHTML = l.certSent + `<div class="btns">${tg && tg.shareToStory && res.url ? `<button class="btn" id="story">${l.story}</button>` : ""}
+      <button class="btn" id="shr">${l.share}</button></div>`;
+    hap("ok");
+    if ($("#story")) $("#story").onclick = () => { try { tg.shareToStory(res.url, {text: "TSUE QUIZ 🎓 " + (r.pct ?? 0) + "%"}); } catch (e) {} };
+    $("#shr").onclick = () => {
+      hap();
+      // 1) сам сертификат-картинкой в любой чат; 2) если Telegram старый — ссылкой
+      if (res.prep && tg && tg.shareMessage) {
+        try { return tg.shareMessage(res.prep, ok => { if (!ok) {} }); } catch (e) {}
+      }
+      shareLink(res.share, res.link);
+    };
+  } catch (e) { msg.textContent = "❗ " + (res.error === "net" ? l.net : (res.error || (e && e.message) || "error")); }
+}
+
+async function show(st) {
+  if (!st) return resync();
+  S.st = st;
+  if (isQ(st)) return screenQuestion(st);
+  if (st.status === "tdone") return screenTrDone(st);
+  if (st.status === "tnext") return resync();
+  if (st.status === "done") {
+    if (!st.top) { const x = await api("/api/result?q=" + st.code); st.top = x.top; }
+    return screenDone(st, false);
+  }
+  route();
+}
+function route() {
+  $("#hdr").textContent = L().hdr;
+  document.querySelectorAll(".lang button").forEach(b => b.classList.toggle("on", b.dataset.l === S.lang));
+  if (!S.me) return;
+  if (!S.me.name) return screenName();
+  if (isQ(S.st)) return screenQuestion(S.st);
+  if (S.quiz) return screenIntro();
+  screenList();
+}
+
+// ---------- защита: свернул приложение — вопрос сгорает ----------
+// Короткое сворачивание (уведомление, пункт управления) < 3 сек не считается.
+const LEAVE_MS = 3000;
+async function doLeave() {
+  if (S.left || !isQ(S.st)) return;
+  S.left = true;
+  const tr = S.st.status === "tquestion";
+  await api(tr ? "/api/tleave" : "/api/leave", {init: INIT}, {keepalive: true, tries: 2});
+}
+document.addEventListener("visibilitychange", async () => {
+  if (document.hidden) {
+    if (!isQ(S.st)) return;
+    S.hiddenAt = Date.now(); S.left = false;
+    clearTimeout(S.leaveT);
+    S.leaveT = setTimeout(() => { if (document.hidden) doLeave(); }, LEAVE_MS);
+    return;
+  }
+  clearTimeout(S.leaveT);
+  if (!S.hiddenAt) return;
+  const away = Date.now() - S.hiddenAt; S.hiddenAt = 0;
+  if (away >= LEAVE_MS) await doLeave();
+  if (S.busy) return;                            // ответ ещё отправляется — он сам покажет следующий вопрос
+  if (isQ(S.st)) resync();
+});
+document.addEventListener("contextmenu", ev => ev.preventDefault());
+document.querySelectorAll(".lang button").forEach(b => b.onclick = () => {
+  S.lang = b.dataset.l; api("/api/lang", {lang: S.lang});
+  if (isQ(S.st)) { $("#hdr").textContent = L().hdr; document.querySelectorAll(".lang button").forEach(x => x.classList.toggle("on", x.dataset.l === S.lang)); return; }   // во время вопроса не перерисовываем
+  if (!S.quiz && S.items) { $("#hdr").textContent = L().hdr; document.querySelectorAll(".lang button").forEach(x => x.classList.toggle("on", x.dataset.l === S.lang)); return drawList(); }
+  route();
+});
+
+(async function init() {
+  if (!INIT) { html(`<div class="card"><h2>📱</h2><div class="muted">${T.ru.auth}<br>${T.uz.auth}</div></div>`); return; }
+  const r = await apiSure("/api/me" + (START ? "?q=" + START : ""));
+  if (!r.ok) { html(`<div class="card">${r.error === "net" ? T.ru.net : T.ru.auth}</div>`); return; }
+  S.me = r; S.lang = T[r.lang] ? r.lang : "ru"; S.quiz = r.quiz; S.st = r.state;
+  if (r.quiz && r.quiz.kind === "trainer") S.tab = "trainer";
+  if (START && !r.quiz) { route(); return screenList(L().noQuiz); }
+  route();
+})();
+</script>
+</body>
+</html>
