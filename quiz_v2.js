@@ -41,6 +41,7 @@ body:not(.lock) .qtext,body:not(.lock) .opt span,body:not(.lock) .rq,body:not(.l
 .grid button.dn{background:var(--line);color:var(--hint)}
 .grid button.cur{background:var(--accent);border-color:var(--accent);color:#fff}
 .lg{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--hint)}
+.course{margin:18px 0 6px;font-size:15px;color:var(--accent);text-transform:uppercase;letter-spacing:.03em}
 </style>
 <script>
 (function(){
@@ -346,7 +347,28 @@ drawList = function() {
   return r;
 };
 const _ssb = screenSubjects;
-screenSubjects = async function() { await _ssb(); qbar(); };
+screenSubjects = async function() {
+  await _ssb(); qbar();
+  let last = null;
+  document.querySelectorAll(".scard").forEach(b => {
+    const c = b.dataset.course || "";
+    if (c && c !== last) b.insertAdjacentHTML("beforebegin", `<h3 class="course">🎓 ${esc(c)}</h3>`);
+    last = c;
+  });
+};
+// курс каждого предмета — из ответа /api/subjects
+const _api0 = api;
+api = async function(path, ...a) {
+  const r = await _api0(path, ...a);
+  if (path === "/api/subjects" && r && r.items) S.subjCourses = r.items.map(x => x.course || "");
+  return r;
+};
+const _htmlC = html;
+html = function(h) {
+  const out = _htmlC(h);
+  if (S.subjCourses && document.querySelector(".scard")) document.querySelectorAll(".scard").forEach(b => { b.dataset.course = S.subjCourses[+b.dataset.i] || ""; });
+  return out;
+};
 
 async function refreshStreak() { const r = await api("/api/streak"); if (r.ok && S.me) S.me.streak = r.streak.n; return r.streak; }
 

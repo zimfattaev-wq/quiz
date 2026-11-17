@@ -604,6 +604,19 @@ async def remind_loop():
             log.exception("Напоминания")
 
 
+# ================== курсы (группы предметов в тренажёре) ==================
+COURSES = [("1 курс · ИК N1", ["Философия", "Религиоведение", "Oʻzbek tili"]),
+           ("2 курс · ИК N1", ["Бухгалтерский учёт", "Бизнес-право"])]
+_COURSE = {subj: (i, name) for i, (name, subjs) in enumerate(COURSES) for subj in subjs}
+
+
+def _courses(items):
+    for x in items:
+        i, name = _COURSE.get(x["name"], (len(COURSES), ""))
+        x["course"], x["ci"] = name, i
+    items.sort(key=lambda x: (x["ci"], x["name"] == C.NO_SUBJ, x["name"]))
+
+
 # ================== API ==================
 _orig_handle = W.handle
 
@@ -635,6 +648,8 @@ def handle(method, path, query, body, user):
         if path == "/api/me" and user and r.get("ok"):
             r["streak"] = streak(C.user(user["id"]))
             r["v"] = 8
+        if path == "/api/subjects" and r.get("ok"):
+            _courses(r.get("items") or [])
         if path == "/api/list" and user and r.get("ok"):
             _list_extra(str(user["id"]), r)
     return r
