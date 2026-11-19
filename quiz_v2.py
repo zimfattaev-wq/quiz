@@ -4,6 +4,7 @@
 import os
 import time
 import html
+import json
 import random
 import asyncio
 import logging
@@ -617,6 +618,19 @@ def _courses(items):
     items.sort(key=lambda x: (x["ci"], x["name"] == C.NO_SUBJ, x["name"]))
 
 
+# ================== Своя игра ==================
+_HERE = os.path.dirname(os.path.abspath(__file__))
+
+
+def sg_topics():
+    try:
+        with open(os.path.join(_HERE, "svoya_igra.json"), encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        log.exception("svoya_igra.json не прочитан")
+        return []
+
+
 # ================== API ==================
 _orig_handle = W.handle
 
@@ -702,6 +716,8 @@ def _handle2(method, path, query, body, user):
     if path == "/api/pcert" and post:
         err = prac_cert(uid, body)
         return {"ok": not err, "error": err}
+    if path == "/api/sg":
+        return {"ok": True, "topics": sg_topics()}
     if path == "/api/history":
         return {"ok": True, "items": history(uid), "streak": streak_info(uid)}
     if path == "/api/hitem":
@@ -760,3 +776,8 @@ W.start_web = start_web
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "quiz_v2.js"), encoding="utf-8") as _f:
     _js = _f.read()
 W.ADMIN_JS = W.ADMIN_JS + "\n" + _js
+try:
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "quiz_sg.js"), encoding="utf-8") as _f:
+        W.ADMIN_JS = W.ADMIN_JS + "\n" + _f.read()          # «Своя игра»
+except FileNotFoundError:
+    pass
