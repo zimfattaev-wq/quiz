@@ -781,3 +781,5 @@ try:
         W.ADMIN_JS = W.ADMIN_JS + "\n" + _f.read()          # «Своя игра»
 except FileNotFoundError:
     pass
+
+import quiz_lobby  # noqa: E402,F401  (зал ожидания перед тестом)
