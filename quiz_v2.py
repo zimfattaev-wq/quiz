@@ -716,6 +716,12 @@ def _handle2(method, path, query, body, user):
     if path == "/api/pcert" and post:
         err = prac_cert(uid, body)
         return {"ok": not err, "error": err}
+    if path == "/api/rank":
+        code = (query.get("q") or "").upper()
+        qz = C.STATE["quizzes"].get(code)
+        if not qz or C.kind(qz) == "trainer":
+            return {"ok": False, "error": "no_quiz"}
+        return {"ok": True, "items": C.top(code, n=1000), "me": uid}
     if path == "/api/sg":
         return {"ok": True, "topics": sg_topics()}
     if path == "/api/history":

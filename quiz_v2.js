@@ -46,7 +46,7 @@ body:not(.lock) .qtext,body:not(.lock) .opt span,body:not(.lock) .rq,body:not(.l
 <script>
 (function(){
 const X = {
- ru:{goNo:"Перейти к вопросу",cur:"сейчас",solved:"решён",curQ:"➡️ К текущему вопросу",qNo:"Вопрос",pcert:"🏅 Сертификат тренировки",pcRib:"ТРЕНИРОВКА · ТЕСТ ЗАКРЫТ",pcSub:"не в зачёт — тренировочная попытка",pcL2:"прошёл(ла) тренировку по тесту",hist:"🕘 История",week:"🏆 Неделя",fire:"дн.",histH:"История",fAll:"Все",fZ:"📝 Зачёт",fP:"🔁 Тренировки",fT:"🏋️ Тренажёр",
+ ru:{rankH:"Места всех участников",goNo:"Перейти к вопросу",cur:"сейчас",solved:"решён",curQ:"➡️ К текущему вопросу",qNo:"Вопрос",pcert:"🏅 Сертификат тренировки",pcRib:"ТРЕНИРОВКА · ТЕСТ ЗАКРЫТ",pcSub:"не в зачёт — тренировочная попытка",pcL2:"прошёл(ла) тренировку по тесту",hist:"🕘 История",week:"🏆 Неделя",fire:"дн.",histH:"История",fAll:"Все",fZ:"📝 Зачёт",fP:"🔁 Тренировки",fT:"🏋️ Тренажёр",
   z:"зачёт",p:"тренировка",r:"тренажёр",noHist:"Пока пусто — пройдите тест или тренировку",noRev:"Разбор будет доступен после закрытия теста",
   oldRev:"Для старых попыток разбор не сохранился",
   pracH:"Тренировка теста",pracRules:["🔒 тест закрыт — тренируйтесь сколько угодно","📊 не идёт в рейтинг, статистику и Excel — только в историю",
@@ -64,7 +64,7 @@ const X = {
   again:"🔁 Ещё раз",onlyUnk:"🔁 Только «не знаю»",fNew:"🆕 Новые",fBad:"❌ С ошибкой",fFav:"⭐",search:"Поиск вопроса",
   next:"➡️ Следующий",toListQ:"📋 К списку",chooseAns:"Выберите ответ",free:"✅ можно сворачивать и подглядывать",
   modes:{prac:"Тренировка теста",tmist:"Ошибки темы",t:"Тренажёр",mist:"Работа над ошибками",hard:"Трудные",fav:"Избранное",rand:"Случайные",exam:"Пробный экзамен",retry:"Работа над ошибками",test:"Тест"}},
- uz:{goNo:"Savolga oʻtish",cur:"hozir",solved:"yechilgan",curQ:"➡️ Joriy savolga",qNo:"Savol",pcert:"🏅 Mashq sertifikati",pcRib:"MASHQ · TEST YOPILGAN",pcSub:"hisobga olinmaydi — mashq urinishi",pcL2:"test boʻyicha mashqni bajardi",hist:"🕘 Tarix",week:"🏆 Hafta",fire:"kun",histH:"Tarix",fAll:"Hammasi",fZ:"📝 Hisobga",fP:"🔁 Mashqlar",fT:"🏋️ Trenajyor",
+ uz:{rankH:"Barcha ishtirokchilar oʻrinlari",goNo:"Savolga oʻtish",cur:"hozir",solved:"yechilgan",curQ:"➡️ Joriy savolga",qNo:"Savol",pcert:"🏅 Mashq sertifikati",pcRib:"MASHQ · TEST YOPILGAN",pcSub:"hisobga olinmaydi — mashq urinishi",pcL2:"test boʻyicha mashqni bajardi",hist:"🕘 Tarix",week:"🏆 Hafta",fire:"kun",histH:"Tarix",fAll:"Hammasi",fZ:"📝 Hisobga",fP:"🔁 Mashqlar",fT:"🏋️ Trenajyor",
   z:"hisobga",p:"mashq",r:"trenajyor",noHist:"Hozircha boʻsh — test yoki mashq topshiring",noRev:"Tahlil test yopilgandan keyin ochiladi",
   oldRev:"Eski urinishlar tahlili saqlanmagan",
   pracH:"Test mashqi",pracRules:["🔒 test yopilgan — xohlagancha mashq qiling","📊 reyting, statistika va Excelga kirmaydi — faqat tarixga",
@@ -82,7 +82,7 @@ const X = {
   again:"🔁 Yana",onlyUnk:"🔁 Faqat «bilmayman»",fNew:"🆕 Yangi",fBad:"❌ Xatoli",fFav:"⭐",search:"Savol qidirish",
   next:"➡️ Keyingi",toListQ:"📋 Roʻyxatga",chooseAns:"Javobni tanlang",free:"✅ ilovani yopish va qarash mumkin",
   modes:{prac:"Test mashqi",tmist:"Mavzu xatolari",t:"Trenajyor",mist:"Xatolar ustida ishlash",hard:"Qiyin",fav:"Saralangan",rand:"Tasodifiy",exam:"Sinov imtihoni",retry:"Xatolar ustida ishlash",test:"Test"}},
- en:{goNo:"Go to question",cur:"now",solved:"solved",curQ:"➡️ Back to current question",qNo:"Question",pcert:"🏅 Practice certificate",pcRib:"PRACTICE · TEST CLOSED",pcSub:"not graded — practice attempt",pcL2:"completed a practice of the test",hist:"🕘 History",week:"🏆 Week",fire:"d",histH:"History",fAll:"All",fZ:"📝 Graded",fP:"🔁 Practice",fT:"🏋️ Trainer",
+ en:{rankH:"Everyone's places",goNo:"Go to question",cur:"now",solved:"solved",curQ:"➡️ Back to current question",qNo:"Question",pcert:"🏅 Practice certificate",pcRib:"PRACTICE · TEST CLOSED",pcSub:"not graded — practice attempt",pcL2:"completed a practice of the test",hist:"🕘 History",week:"🏆 Week",fire:"d",histH:"History",fAll:"All",fZ:"📝 Graded",fP:"🔁 Practice",fT:"🏋️ Trainer",
   z:"graded",p:"practice",r:"trainer",noHist:"Nothing yet — take a test or a practice",noRev:"Review opens after the test is closed",
   oldRev:"Review wasn't saved for old attempts",
   pracH:"Test practice",pracRules:["🔒 the test is closed — practice as much as you like","📊 not counted in ranking, stats or Excel — history only",
@@ -100,7 +100,7 @@ const X = {
   again:"🔁 Again",onlyUnk:"🔁 Only “don't know”",fNew:"🆕 New",fBad:"❌ Wrong",fFav:"⭐",search:"Search a question",
   next:"➡️ Next",toListQ:"📋 To list",chooseAns:"Choose an answer",free:"✅ you may minimize and look things up",
   modes:{prac:"Test practice",tmist:"Topic mistakes",t:"Trainer",mist:"Mistakes",hard:"Hard",fav:"Favorites",rand:"Random",exam:"Mock exam",retry:"Mistakes",test:"Test"}},
- zh:{goNo:"跳到题目",cur:"当前",solved:"已答",curQ:"➡️ 回到当前题",qNo:"题目",pcert:"🏅 练习证书",pcRib:"练习 · 测验已关闭",pcSub:"不计分——练习记录",pcL2:"完成了测验练习",hist:"🕘 历史",week:"🏆 本周",fire:"天",histH:"历史记录",fAll:"全部",fZ:"📝 正式",fP:"🔁 练习",fT:"🏋️ 练习库",
+ zh:{rankH:"全部参与者排名",goNo:"跳到题目",cur:"当前",solved:"已答",curQ:"➡️ 回到当前题",qNo:"题目",pcert:"🏅 练习证书",pcRib:"练习 · 测验已关闭",pcSub:"不计分——练习记录",pcL2:"完成了测验练习",hist:"🕘 历史",week:"🏆 本周",fire:"天",histH:"历史记录",fAll:"全部",fZ:"📝 正式",fP:"🔁 练习",fT:"🏋️ 练习库",
   z:"正式",p:"练习",r:"练习库",noHist:"暂无记录——去做测验或练习吧",noRev:"测验关闭后可查看解析",
   oldRev:"旧记录没有保存解析",
   pracH:"测验练习",pracRules:["🔒 测验已关闭——可无限次练习","📊 不计入排名、统计和 Excel——只记入历史",
@@ -252,9 +252,23 @@ screenIntro = function() {
   if (q && q.kind !== "trainer" && q.open === false && !q.result) return screenPrac(q);
   return _intro();
 };
+async function fullRank(st) {
+  const code = st.code || (S.quiz && S.quiz.code);
+  if (!code) return;
+  const r = await api("/api/rank?q=" + encodeURIComponent(code));
+  if (!r.ok || !r.items.length || !$("#again")) return;
+  document.querySelectorAll("#app .lb").forEach(x => x.closest(".card").remove());
+  const t = x(), me = r.me;
+  const box = document.createElement("div");
+  box.className = "card";
+  box.innerHTML = `<b>🏆 ${t.rankH} — ${r.items.length}</b><div class="lb">${r.items.map((z, i) =>
+    `<div class="${z.uid === me ? "me" : ""}" ${z.uid === me ? 'id="rkme"' : ""}><span>${["🥇","🥈","🥉"][i] || (i + 1) + "."} ${avaImg(z.uid, z.av, "avs")}${esc(z.name)}</span><span>${z.pct}% · ${z.points}/50 · ${fmt(z.time)}</span></div>`).join("")}</div>`;
+  $("#again").parentNode.insertBefore(box, $("#again"));
+}
 const _sd = screenDone;
 screenDone = function(st, already) {
   _sd(st, already);
+  fullRank(st);
   if (!st.review || !st.code) return;
   const b = document.createElement("button"); b.className = "btn"; b.textContent = x().pracBtn;
   b.onclick = () => { S.subjName = null; S.tab = "test"; startMode({mode: "prac", code: st.code}); };
