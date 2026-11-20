@@ -618,6 +618,35 @@ def _courses(items):
     items.sort(key=lambda x: (x["ci"], x["name"] == C.NO_SUBJ, x["name"]))
 
 
+# ================== основатель и профиль любого участника ==================
+FOUNDER = os.environ.get("FOUNDER", "fedex_azim").lstrip("@").lower()
+
+
+def founder():
+    for uid, u in C.STATE["users"].items():
+        if (u.get("username") or "").lower() == FOUNDER:
+            return uid
+    return None
+
+
+def pub_profile(uid):
+    uid = str(uid)
+    if uid not in C.STATE["users"]:
+        return {"ok": False, "error": "no_user"}
+    u = C.user(uid)
+    p = C.profile(uid)
+    qs = u.get("qs", {})
+    si = streak_info(uid)
+    return {"ok": True, "p": {
+        "uid": uid, "name": u.get("name") or u.get("tg_name") or "—", "av": u.get("avatar"),
+        "founder": uid == founder(), "level": p["level"], "xp": p["xp"],
+        "days": len(set(u.get("days", []))), "streak": si["n"], "best_streak": si["best"],
+        "solved": sum(r[0] + r[1] for r in qs.values()), "right": sum(r[0] for r in qs.values()),
+        "learned": sum(1 for r in qs.values() if r[2] == 1), "runs": len(u.get("hist", [])) or len(u.get("thist", [])),
+        "tests": p["tests"], "avg": p["avg_pct"], "best": p["best"],
+        "history": [{"title": h["title"], "pct": h["pct"], "place": h["place"], "all": h["all"]} for h in p["history"][:8]]}}
+
+
 # ================== Своя игра ==================
 _HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -661,6 +690,8 @@ def handle(method, path, query, body, user):
                 _nav(str(user["id"]), r["state"])
         if path == "/api/me" and user and r.get("ok"):
             r["streak"] = streak(C.user(user["id"]))
+            f = founder()
+            r["founder"] = {"uid": f, "name": C.user(f).get("name") or "Fattayev Azimjon"} if f else None
             r["v"] = 8
         if path == "/api/subjects" and r.get("ok"):
             _courses(r.get("items") or [])
@@ -716,6 +747,8 @@ def _handle2(method, path, query, body, user):
     if path == "/api/pcert" and post:
         err = prac_cert(uid, body)
         return {"ok": not err, "error": err}
+    if path == "/api/pub":
+        return pub_profile(query.get("uid", ""))
     if path == "/api/rank":
         code = (query.get("q") or "").upper()
         qz = C.STATE["quizzes"].get(code)

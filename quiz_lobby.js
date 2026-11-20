@@ -17,19 +17,19 @@
 <script>
 (function(){
 const XL = {
- ru:{onlyG:"👥 Только для группы ",notG:"🔒 Этот тест сейчас только для группы {g}. Когда его закроют, он станет доступен всем для тренировки.",enter:"👥 Войти в зал ожидания",title:"Зал ожидания",of:"из",wait:"Тест начнётся сам, когда одновременно соберутся {n} человек. Не закрывайте приложение — если выйти, место в зале пропадёт.",
+ ru:{lockH:"🔒 Вы не являетесь студентом группы {g}",lockT:"Этот тест сейчас только для группы {g}. Возможно, вы ошиблись в имени — сейчас вы записаны как «{n}». Сравните со списком ниже и исправьте имя.",fixName:"✏️ Исправить имя",lockAfter:"Когда тест закроют, он станет доступен всем для тренировки.",groupList:"Список группы",lockBadge:"🔒 только ",onlyG:"👥 Только для группы ",notG:"🔒 Этот тест сейчас только для группы {g}. Когда его закроют, он станет доступен всем для тренировки.",enter:"👥 Войти в зал ожидания",title:"Зал ожидания",of:"из",wait:"Тест начнётся сам, когда одновременно соберутся {n} человек. Не закрывайте приложение — если выйти, место в зале пропадёт.",
   go:"🚀 Набралось! Тест начинается…",inRoom:"✅ В зале",miss:"⏳ Ещё не зашли",typo:"имя с ошибкой — написано: ",ext:"нет в списке группы",me:"вы",
   force:"▶️ Запустить тест сейчас (админ)",already:"Тест уже запущен — можно начинать",start:"▶️ Начать тест",started:"уже начали тест",nobody:"Все из списка зашли 🎉",
   need:"Для начала нужно {n} человек одновременно"},
- uz:{onlyG:"👥 Faqat guruh uchun: ",notG:"🔒 Bu test hozircha faqat {g} guruhi uchun. Yopilgach, hamma mashq qilishi mumkin boʻladi.",enter:"👥 Kutish zaliga kirish",title:"Kutish zali",of:"/",wait:"Bir vaqtda {n} kishi yigʻilganda test oʻzi boshlanadi. Ilovani yopmang — chiqsangiz, zaldagi oʻrningiz yoʻqoladi.",
+ uz:{lockH:"🔒 Siz {g} guruhi talabasi emassiz",lockT:"Bu test hozircha faqat {g} guruhi uchun. Ehtimol, ismingizni xato yozgansiz — hozir siz «{n}» deb yozilgansiz. Quyidagi roʻyxat bilan solishtiring va ismni tuzating.",fixName:"✏️ Ismni tuzatish",lockAfter:"Test yopilgach, hamma mashq qilishi mumkin boʻladi.",groupList:"Guruh roʻyxati",lockBadge:"🔒 faqat ",onlyG:"👥 Faqat guruh uchun: ",notG:"🔒 Bu test hozircha faqat {g} guruhi uchun. Yopilgach, hamma mashq qilishi mumkin boʻladi.",enter:"👥 Kutish zaliga kirish",title:"Kutish zali",of:"/",wait:"Bir vaqtda {n} kishi yigʻilganda test oʻzi boshlanadi. Ilovani yopmang — chiqsangiz, zaldagi oʻrningiz yoʻqoladi.",
   go:"🚀 Yigʻildi! Test boshlanmoqda…",inRoom:"✅ Zalda",miss:"⏳ Hali kirmaganlar",typo:"ism xato yozilgan: ",ext:"guruh roʻyxatida yoʻq",me:"siz",
   force:"▶️ Testni hozir boshlash (admin)",already:"Test allaqachon boshlangan — boshlash mumkin",start:"▶️ Testni boshlash",started:"testni boshlagan",nobody:"Roʻyxatdagilarning hammasi kirdi 🎉",
   need:"Boshlash uchun bir vaqtda {n} kishi kerak"},
- en:{onlyG:"👥 Only for group ",notG:"🔒 This test is only for group {g} for now. Once it is closed, everyone can practice it.",enter:"👥 Enter the waiting room",title:"Waiting room",of:"of",wait:"The test starts by itself once {n} people are here at the same time. Keep the app open — if you leave, you lose your place.",
+ en:{lockH:"🔒 You are not a student of group {g}",lockT:"This test is only for group {g} for now. Maybe your name has a typo — you are registered as “{n}”. Compare with the list below and fix your name.",fixName:"✏️ Fix my name",lockAfter:"Once the test is closed, everyone can practice it.",groupList:"Group list",lockBadge:"🔒 only ",onlyG:"👥 Only for group ",notG:"🔒 This test is only for group {g} for now. Once it is closed, everyone can practice it.",enter:"👥 Enter the waiting room",title:"Waiting room",of:"of",wait:"The test starts by itself once {n} people are here at the same time. Keep the app open — if you leave, you lose your place.",
   go:"🚀 Everyone's here! Starting…",inRoom:"✅ In the room",miss:"⏳ Not here yet",typo:"name has a typo — typed: ",ext:"not in the group list",me:"you",
   force:"▶️ Start the test now (admin)",already:"The test has started — you can begin",start:"▶️ Start test",started:"already started",nobody:"Everyone from the list is here 🎉",
   need:"{n} people must be here at once to start"},
- zh:{onlyG:"👥 仅限班级 ",notG:"🔒 该测验目前仅限 {g} 班。关闭后所有人都可以练习。",enter:"👥 进入等候室",title:"等候室",of:"/",wait:"同时到齐 {n} 人后测验会自动开始。请不要关闭应用——离开会失去位置。",
+ zh:{lockH:"🔒 你不是 {g} 班的学生",lockT:"该测验目前仅限 {g} 班。也许你的姓名填写有误——你现在登记为「{n}」。请对照下方名单修改姓名。",fixName:"✏️ 修改姓名",lockAfter:"测验关闭后，所有人都可以练习。",groupList:"班级名单",lockBadge:"🔒 仅限 ",onlyG:"👥 仅限班级 ",notG:"🔒 该测验目前仅限 {g} 班。关闭后所有人都可以练习。",enter:"👥 进入等候室",title:"等候室",of:"/",wait:"同时到齐 {n} 人后测验会自动开始。请不要关闭应用——离开会失去位置。",
   go:"🚀 人齐了！测验开始…",inRoom:"✅ 已进入",miss:"⏳ 尚未进入",typo:"姓名有误——填写为：",ext:"不在班级名单中",me:"你",
   force:"▶️ 立即开始测验（管理员）",already:"测验已开始——可以作答",start:"▶️ 开始测验",started:"已开始作答",nobody:"名单上的人都到了 🎉",
   need:"需要同时有 {n} 人才能开始"}
@@ -37,8 +37,32 @@ const XL = {
 const xl = () => XL[S.lang] || XL.ru;
 let LB = null;   // {code, t}
 
+async function screenLocked(q) {
+  if (!q.roster) {
+    html('<div class="spin"><i></i></div>');
+    const r = await _apiL("/api/quiz?q=" + encodeURIComponent(q.code));
+    if (r.ok && r.quiz) { q = S.quiz = r.quiz; if (!q.locked) return screenIntro(); }
+  }
+  const t = xl(), g = esc(q.locked);
+  html(`${backBtn()}<div class="card"><h2>${t.lockH.replace("{g}", g)}</h2><div class="muted">📝 ${esc(q.title)}</div>
+    <p>${t.lockT.replace(/\{g\}/g, g).replace("{n}", esc(q.myname || "—"))}</p>
+    <button class="btn" id="fixn">${t.fixName}</button><div class="muted" style="margin-top:8px">${t.lockAfter}</div></div>
+    ${(q.roster || []).length ? `<div class="card"><div class="lb-h">👥 ${t.groupList} ${g} — ${q.roster.length}</div>${q.roster.map((n, i) => `<div class="lb-p lb-miss"><span class="nm">${i + 1}. ${esc(n)}</span></div>`).join("")}</div>` : ""}`);
+  wireBack(toList);
+  $("#fixn").onclick = () => { hap(); S.me.name = ""; screenName(); };
+}
+const _dlL = drawList;
+drawList = function() {
+  const r = _dlL();
+  document.querySelectorAll(".qitem").forEach(b => {
+    const q = (S.items || []).find(z => z.code === b.dataset.c);
+    if (q && q.locked) { const s = b.querySelector(".st"); if (s) s.textContent = xl().lockBadge + q.locked; const ic = b.querySelector(".ic"); if (ic) ic.textContent = "🔒"; }
+  });
+  return r;
+};
 const _in = screenIntro;
 screenIntro = function() {
+  if (S.quiz && S.quiz.locked) return screenLocked(S.quiz);
   const r = _in();
   const q = S.quiz;
   if (q && q.kind !== "trainer" && q.open && q.group && $("#go")) $("#go").insertAdjacentHTML("beforebegin", `<div class="muted" style="margin:8px 0">${xl().onlyG}<b>${esc(q.group)}</b></div>`);
@@ -97,7 +121,7 @@ async function screenLobby(q) {
       ${r.go && r.admin ? `<button class="btn" id="lbs">${t.start}</button>` : ""}
       ${!r.go && r.admin ? `<button class="btn ghost" id="lbf" style="margin-top:10px">${t.force}</button>` : ""}</div>
       <div class="card"><div class="lb-h">${t.inRoom} — ${r.joined.length}${r.started ? ` · ${r.started} ${t.started}` : ""}</div>
-      ${r.joined.map(p => `<div class="lb-p ${p.me ? "me" : ""}"><span class="lb-dot"></span>${avaImg(p.uid, p.av, "avs")}<span class="nm">${esc(p.roster || p.name)}${p.me ? ` <span class="muted">(${t.me})</span>` : ""}
+      ${r.joined.map(p => `<div class="lb-p ${p.me ? "me" : ""}" data-pu="${p.uid}"><span class="lb-dot"></span>${avaImg(p.uid, p.av, "avs")}<span class="nm">${esc(p.roster || p.name)}${p.me ? ` <span class="muted">(${t.me})</span>` : ""}${window.fmark ? fmark(p.uid) : ""}
         ${p.roster && p.typo ? `<small>⚠️ ${t.typo}«${esc(p.name)}»</small>` : ""}${!p.roster ? `<small class="ext">❔ ${t.ext}</small>` : ""}</span></div>`).join("")}
       ${r.group ? `<div class="lb-h">${t.miss} — ${r.missing.length}</div>${r.missing.length ? r.missing.map(n => `<div class="lb-p lb-miss">⚪️ <span class="nm">${esc(n)}</span></div>`).join("") : `<div class="muted">${t.nobody}</div>`}` : ""}</div>`);
     wireBack(out);

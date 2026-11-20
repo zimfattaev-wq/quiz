@@ -183,7 +183,7 @@ def _blocked(user, code):
 def handle(method, path, query, body, user):
     if user:
         code = query.get("code") or query.get("q") if method == "GET" else body.get("code")
-        if path in ("/api/quiz", "/api/start", "/api/lobby", "/api/lobby/go") and code:
+        if path in ("/api/start", "/api/lobby", "/api/lobby/go") and code:
             g = _blocked(user, code)
             if g:
                 return {"ok": False, "error": "group", "group": g}
@@ -208,11 +208,13 @@ def handle(method, path, query, body, user):
     r = _prev_handle(method, path, query, body, user)
     if user and isinstance(r, dict) and r.get("ok"):
         uid = str(user["id"])
-        if path == "/api/list":
-            r["items"] = [q for q in r.get("items") or [] if not (C.STATE["quizzes"].get(q.get("code", "")) and
-                                                                  closed_to(uid, C.STATE["quizzes"][q["code"]]))]
-        if path == "/api/me" and isinstance(r.get("quiz"), dict) and _blocked(user, r["quiz"].get("code")):
-            r["quiz"] = None
+        for q in ([r["quiz"]] if isinstance(r.get("quiz"), dict) else []) + (r.get("items") or [] if path == "/api/list" else []):
+            g = _blocked(user, q.get("code"))
+            if g:                                   # тест виден, но начать нельзя — не из группы
+                q["locked"] = g
+                if path in ("/api/quiz", "/api/me"):
+                    q["roster"] = roster(g)[1]
+                    q["myname"] = C.user(uid).get("name") or ""
     if isinstance(r, dict) and r.get("ok"):
         for q in ([r["quiz"]] if isinstance(r.get("quiz"), dict) else []) + (r.get("items") or [] if path == "/api/list" else []):
             qz = C.STATE["quizzes"].get(q.get("code", ""))

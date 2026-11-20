@@ -42,11 +42,16 @@ body:not(.lock) .qtext,body:not(.lock) .opt span,body:not(.lock) .rq,body:not(.l
 .grid button.cur{background:var(--accent);border-color:var(--accent);color:#fff}
 .lg{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--hint)}
 .course{margin:18px 0 6px;font-size:15px;color:var(--accent);text-transform:uppercase;letter-spacing:.03em}
+.fnd{display:inline-block;font-size:11px;font-weight:800;color:#a86a00;background:#fff4d6;border-radius:7px;padding:1px 6px;margin-left:4px;vertical-align:middle}
+[data-pu]{cursor:pointer}
+.pubg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:12px 0}
+.pubg div{background:#f3f6fc;border-radius:12px;padding:10px 4px;text-align:center}.pubg b{display:block;font-size:19px;color:var(--accent)}.pubg span{font-size:11px;color:var(--hint)}
+.fline{background:#fff8e6;border:1px solid #f3d58a;color:#7a5200;border-radius:12px;padding:9px 12px;font-size:14px;font-weight:600;margin:8px 0}
 </style>
 <script>
 (function(){
 const X = {
- ru:{rankH:"Места всех участников",goNo:"Перейти к вопросу",cur:"сейчас",solved:"решён",curQ:"➡️ К текущему вопросу",qNo:"Вопрос",pcert:"🏅 Сертификат тренировки",pcRib:"ТРЕНИРОВКА · ТЕСТ ЗАКРЫТ",pcSub:"не в зачёт — тренировочная попытка",pcL2:"прошёл(ла) тренировку по тесту",hist:"🕘 История",week:"🏆 Неделя",fire:"дн.",histH:"История",fAll:"Все",fZ:"📝 Зачёт",fP:"🔁 Тренировки",fT:"🏋️ Тренажёр",
+ ru:{pubDays:"дней занимался",pubStreak:"серия сейчас",pubBest:"лучшая серия",pubSolved:"решено вопросов",pubRight:"верно",pubLearned:"выучено",pubTests:"тестов",pubAvg:"средний %",pubTop:"лучший %",founder:"Основатель",founderOf:"👑 Основатель TSUE QUIZ: ",lastT:"Последние тесты",place:"место",rankH:"Места всех участников",goNo:"Перейти к вопросу",cur:"сейчас",solved:"решён",curQ:"➡️ К текущему вопросу",qNo:"Вопрос",pcert:"🏅 Сертификат тренировки",pcRib:"ТРЕНИРОВКА · ТЕСТ ЗАКРЫТ",pcSub:"не в зачёт — тренировочная попытка",pcL2:"прошёл(ла) тренировку по тесту",hist:"🕘 История",week:"🏆 Неделя",fire:"дн.",histH:"История",fAll:"Все",fZ:"📝 Зачёт",fP:"🔁 Тренировки",fT:"🏋️ Тренажёр",
   z:"зачёт",p:"тренировка",r:"тренажёр",noHist:"Пока пусто — пройдите тест или тренировку",noRev:"Разбор будет доступен после закрытия теста",
   oldRev:"Для старых попыток разбор не сохранился",
   pracH:"Тренировка теста",pracRules:["🔒 тест закрыт — тренируйтесь сколько угодно","📊 не идёт в рейтинг, статистику и Excel — только в историю",
@@ -64,7 +69,7 @@ const X = {
   again:"🔁 Ещё раз",onlyUnk:"🔁 Только «не знаю»",fNew:"🆕 Новые",fBad:"❌ С ошибкой",fFav:"⭐",search:"Поиск вопроса",
   next:"➡️ Следующий",toListQ:"📋 К списку",chooseAns:"Выберите ответ",free:"✅ можно сворачивать и подглядывать",
   modes:{prac:"Тренировка теста",tmist:"Ошибки темы",t:"Тренажёр",mist:"Работа над ошибками",hard:"Трудные",fav:"Избранное",rand:"Случайные",exam:"Пробный экзамен",retry:"Работа над ошибками",test:"Тест"}},
- uz:{rankH:"Barcha ishtirokchilar oʻrinlari",goNo:"Savolga oʻtish",cur:"hozir",solved:"yechilgan",curQ:"➡️ Joriy savolga",qNo:"Savol",pcert:"🏅 Mashq sertifikati",pcRib:"MASHQ · TEST YOPILGAN",pcSub:"hisobga olinmaydi — mashq urinishi",pcL2:"test boʻyicha mashqni bajardi",hist:"🕘 Tarix",week:"🏆 Hafta",fire:"kun",histH:"Tarix",fAll:"Hammasi",fZ:"📝 Hisobga",fP:"🔁 Mashqlar",fT:"🏋️ Trenajyor",
+ uz:{pubDays:"kun shugʻullangan",pubStreak:"hozirgi seriya",pubBest:"eng uzun seriya",pubSolved:"yechilgan savol",pubRight:"toʻgʻri",pubLearned:"oʻrganilgan",pubTests:"test",pubAvg:"oʻrtacha %",pubTop:"eng yaxshi %",founder:"Asoschi",founderOf:"👑 TSUE QUIZ asoschisi: ",lastT:"Oxirgi testlar",place:"oʻrin",rankH:"Barcha ishtirokchilar oʻrinlari",goNo:"Savolga oʻtish",cur:"hozir",solved:"yechilgan",curQ:"➡️ Joriy savolga",qNo:"Savol",pcert:"🏅 Mashq sertifikati",pcRib:"MASHQ · TEST YOPILGAN",pcSub:"hisobga olinmaydi — mashq urinishi",pcL2:"test boʻyicha mashqni bajardi",hist:"🕘 Tarix",week:"🏆 Hafta",fire:"kun",histH:"Tarix",fAll:"Hammasi",fZ:"📝 Hisobga",fP:"🔁 Mashqlar",fT:"🏋️ Trenajyor",
   z:"hisobga",p:"mashq",r:"trenajyor",noHist:"Hozircha boʻsh — test yoki mashq topshiring",noRev:"Tahlil test yopilgandan keyin ochiladi",
   oldRev:"Eski urinishlar tahlili saqlanmagan",
   pracH:"Test mashqi",pracRules:["🔒 test yopilgan — xohlagancha mashq qiling","📊 reyting, statistika va Excelga kirmaydi — faqat tarixga",
@@ -82,7 +87,7 @@ const X = {
   again:"🔁 Yana",onlyUnk:"🔁 Faqat «bilmayman»",fNew:"🆕 Yangi",fBad:"❌ Xatoli",fFav:"⭐",search:"Savol qidirish",
   next:"➡️ Keyingi",toListQ:"📋 Roʻyxatga",chooseAns:"Javobni tanlang",free:"✅ ilovani yopish va qarash mumkin",
   modes:{prac:"Test mashqi",tmist:"Mavzu xatolari",t:"Trenajyor",mist:"Xatolar ustida ishlash",hard:"Qiyin",fav:"Saralangan",rand:"Tasodifiy",exam:"Sinov imtihoni",retry:"Xatolar ustida ishlash",test:"Test"}},
- en:{rankH:"Everyone's places",goNo:"Go to question",cur:"now",solved:"solved",curQ:"➡️ Back to current question",qNo:"Question",pcert:"🏅 Practice certificate",pcRib:"PRACTICE · TEST CLOSED",pcSub:"not graded — practice attempt",pcL2:"completed a practice of the test",hist:"🕘 History",week:"🏆 Week",fire:"d",histH:"History",fAll:"All",fZ:"📝 Graded",fP:"🔁 Practice",fT:"🏋️ Trainer",
+ en:{pubDays:"days practiced",pubStreak:"current streak",pubBest:"best streak",pubSolved:"questions solved",pubRight:"correct",pubLearned:"learned",pubTests:"tests",pubAvg:"average %",pubTop:"best %",founder:"Founder",founderOf:"👑 TSUE QUIZ founder: ",lastT:"Recent tests",place:"place",rankH:"Everyone's places",goNo:"Go to question",cur:"now",solved:"solved",curQ:"➡️ Back to current question",qNo:"Question",pcert:"🏅 Practice certificate",pcRib:"PRACTICE · TEST CLOSED",pcSub:"not graded — practice attempt",pcL2:"completed a practice of the test",hist:"🕘 History",week:"🏆 Week",fire:"d",histH:"History",fAll:"All",fZ:"📝 Graded",fP:"🔁 Practice",fT:"🏋️ Trainer",
   z:"graded",p:"practice",r:"trainer",noHist:"Nothing yet — take a test or a practice",noRev:"Review opens after the test is closed",
   oldRev:"Review wasn't saved for old attempts",
   pracH:"Test practice",pracRules:["🔒 the test is closed — practice as much as you like","📊 not counted in ranking, stats or Excel — history only",
@@ -100,7 +105,7 @@ const X = {
   again:"🔁 Again",onlyUnk:"🔁 Only “don't know”",fNew:"🆕 New",fBad:"❌ Wrong",fFav:"⭐",search:"Search a question",
   next:"➡️ Next",toListQ:"📋 To list",chooseAns:"Choose an answer",free:"✅ you may minimize and look things up",
   modes:{prac:"Test practice",tmist:"Topic mistakes",t:"Trainer",mist:"Mistakes",hard:"Hard",fav:"Favorites",rand:"Random",exam:"Mock exam",retry:"Mistakes",test:"Test"}},
- zh:{rankH:"全部参与者排名",goNo:"跳到题目",cur:"当前",solved:"已答",curQ:"➡️ 回到当前题",qNo:"题目",pcert:"🏅 练习证书",pcRib:"练习 · 测验已关闭",pcSub:"不计分——练习记录",pcL2:"完成了测验练习",hist:"🕘 历史",week:"🏆 本周",fire:"天",histH:"历史记录",fAll:"全部",fZ:"📝 正式",fP:"🔁 练习",fT:"🏋️ 练习库",
+ zh:{pubDays:"练习天数",pubStreak:"当前连续",pubBest:"最长连续",pubSolved:"已答题目",pubRight:"答对",pubLearned:"已掌握",pubTests:"测验",pubAvg:"平均 %",pubTop:"最佳 %",founder:"创始人",founderOf:"👑 TSUE QUIZ 创始人：",lastT:"最近的测验",place:"名次",rankH:"全部参与者排名",goNo:"跳到题目",cur:"当前",solved:"已答",curQ:"➡️ 回到当前题",qNo:"题目",pcert:"🏅 练习证书",pcRib:"练习 · 测验已关闭",pcSub:"不计分——练习记录",pcL2:"完成了测验练习",hist:"🕘 历史",week:"🏆 本周",fire:"天",histH:"历史记录",fAll:"全部",fZ:"📝 正式",fP:"🔁 练习",fT:"🏋️ 练习库",
   z:"正式",p:"练习",r:"练习库",noHist:"暂无记录——去做测验或练习吧",noRev:"测验关闭后可查看解析",
   oldRev:"旧记录没有保存解析",
   pracH:"测验练习",pracRules:["🔒 测验已关闭——可无限次练习","📊 不计入排名、统计和 Excel——只记入历史",
@@ -233,6 +238,30 @@ async function screenTView(st, p) {
   setBack(() => show(st));
 }
 
+
+// ---------- основатель и профиль любого участника ----------
+const isF = uid => S.me && S.me.founder && String(uid) === String(S.me.founder.uid);
+window.fmark = uid => isF(uid) ? `<span class="fnd">👑 ${x().founder}</span>` : "";
+window.showPub = async function(uid) {
+  hap();
+  const r = await api("/api/pub?uid=" + encodeURIComponent(uid));
+  if (!r.ok) return;
+  const p = r.p, t = x(), l = L();
+  const o = overlay(`<div style="display:flex;gap:12px;align-items:center">${p.av ? avaImg(p.uid, p.av, "ava") : `<span class="lv" style="font-size:34px">${l.lvls[p.level].split(" ")[0]}</span>`}
+    <div><b style="font-size:18px">${esc(p.name)}</b>${p.founder ? `<span class="fnd">👑 ${t.founder}</span>` : ""}<div class="muted">${l.lvls[p.level]} · ${p.xp} ${l.xp}</div></div></div>
+    <div class="pubg"><div><b>${p.days}</b><span>📅 ${t.pubDays}</span></div><div><b>🔥 ${p.streak}</b><span>${t.pubStreak}</span></div><div><b>${p.best_streak}</b><span>${t.pubBest}</span></div>
+    <div><b>${p.solved}</b><span>🏋️ ${t.pubSolved}</span></div><div><b>${p.right}</b><span>✅ ${t.pubRight}</span></div><div><b>${p.learned}</b><span>📈 ${t.pubLearned}</span></div>
+    <div><b>${p.tests}</b><span>📝 ${t.pubTests}</span></div><div><b>${p.avg}%</b><span>${t.pubAvg}</span></div><div><b>${p.best}%</b><span>${t.pubTop}</span></div></div>
+    ${p.history.length ? `<b>${t.lastT}</b>${p.history.map(h => `<div class="wk"><span>${esc(h.title)}</span><span><b>${h.pct}%</b> · ${h.place}/${h.all}</span></div>`).join("")}` : ""}
+    <button class="btn ghost" id="pbx" style="margin-top:12px">✖️</button>`);
+  o.querySelector(".box").style.maxHeight = "85vh"; o.querySelector(".box").style.overflow = "auto";
+  o.querySelector("#pbx").onclick = () => o.remove();
+};
+document.addEventListener("click", e => { const el = e.target.closest("[data-pu]"); if (el && !e.target.closest(".ovl")) window.showPub(el.dataset.pu); });
+function founderLine() { const f = S.me && S.me.founder; return f ? `<div class="fline">${x().founderOf}<b>${esc(f.name)}</b></div>` : ""; }
+const _tri = screenTrIntro;
+screenTrIntro = function() { const r = _tri(); const c = document.querySelector("#app .card"); if (c && !c.querySelector(".fline")) c.insertAdjacentHTML("beforeend", founderLine()); return r; };
+
 // ---------- закрытые тесты: тренировка ----------
 function screenPrac(q) {
   const t = x(), l = L(), p = q.prac;
@@ -262,7 +291,7 @@ async function fullRank(st) {
   const box = document.createElement("div");
   box.className = "card";
   box.innerHTML = `<b>🏆 ${t.rankH} — ${r.items.length}</b><div class="lb">${r.items.map((z, i) =>
-    `<div class="${z.uid === me ? "me" : ""}" ${z.uid === me ? 'id="rkme"' : ""}><span>${["🥇","🥈","🥉"][i] || (i + 1) + "."} ${avaImg(z.uid, z.av, "avs")}${esc(z.name)}</span><span>${z.pct}% · ${z.points}/50 · ${fmt(z.time)}</span></div>`).join("")}</div>`;
+    `<div class="${z.uid === me ? "me" : ""}" data-pu="${z.uid}"><span>${["🥇","🥈","🥉"][i] || (i + 1) + "."} ${avaImg(z.uid, z.av, "avs")}${esc(z.name)}${fmark(z.uid)}</span><span>${z.pct}% · ${z.points}/50 · ${fmt(z.time)}</span></div>`).join("")}</div>`;
   $("#again").parentNode.insertBefore(box, $("#again"));
 }
 const _sd = screenDone;
@@ -441,7 +470,7 @@ async function screenWeek() {
   html(`${backBtn()}<h2>🏆 ${t.weekH}</h2><div class="muted">${w.from} – ${w.to} · ${t.weekD}</div>
     ${w.me ? `<div class="card" style="text-align:center"><div class="muted">${t.youPlace}</div><div class="big">${w.me.place}<span class="muted" style="font-size:16px"> / ${w.all}</span></div>
       <div class="muted">✅ ${w.me.c} ${t.corr} · ${w.me.n} ${t.ans}</div></div>` : `<div class="card muted" style="text-align:center">${t.notIn}</div>`}
-    <div class="card">${w.items.length ? w.items.map(z => `<div class="wk ${z.uid === me ? "me" : ""}"><span>${["🥇","🥈","🥉"][z.place - 1] || z.place + "."} ${avaImg(z.uid, z.av, "avs")}${esc(z.name)}</span>
+    <div class="card">${w.items.length ? w.items.map(z => `<div class="wk ${z.uid === me ? "me" : ""}" data-pu="${z.uid}"><span>${["🥇","🥈","🥉"][z.place - 1] || z.place + "."} ${avaImg(z.uid, z.av, "avs")}${esc(z.name)}${fmark(z.uid)}</span>
       <span><b>${z.c}</b> <span class="muted">/ ${z.n}</span></span></div>`).join("") : `<div class="muted" style="text-align:center">${t.weekEmpty}</div>`}</div>`);
   wireBack(toList);
 }
@@ -461,6 +490,7 @@ screenSubject = async function(name) {
   if (!r.ok || S.subjName !== name) return;
   const p = r.progress, card = document.querySelector("#app .card");
   if (!card) return;
+  card.insertAdjacentHTML("beforebegin", founderLine());
   card.insertAdjacentHTML("afterbegin", `<div style="display:flex;justify-content:space-between;font-weight:800"><span>${t.learned} ${p.ok} ${t.of} ${p.total}</span><span style="color:var(--green)">${p.pct}%</span></div>`);
   if (p.weak.length) {
     card.insertAdjacentHTML("afterend", `<div class="card"><b>${t.weakH}</b>${p.weak.map(w => `<div class="weak"><span>${esc(w.title)}<br><span class="muted">❌ ${w.bad} · ✅ ${w.ok} / ${w.total}</span></span>
