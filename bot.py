@@ -4,6 +4,7 @@ TSUE QUIZ: тесты в мини-приложении. Любой может п
 import io
 import os
 import csv
+import json
 import html
 import logging
 
@@ -30,19 +31,19 @@ DRAFTS = {}
 UPLOADS = {}          # загруженный тест ждёт выбора: тест или тренажёр
 K = {   # тест / тренажёр
     "ru": {"kind_q": "📦 Принято: «{t}» — {n} вопр.\n\nКуда добавить?",
-           "k_test": "📝 Тест (для всех, с рейтингом)", "k_tr": "🏋️ Тренажёр (практика)",
+           "k_test": "📝 Тест (с рейтингом)", "k_tr": "🏋️ Тренажёр (практика)",
            "add_more": "\n\n🏋️ После загрузки выберите: <b>тест</b> (одна попытка, рейтинг) или <b>тренажёр</b> "
                        "(сколько угодно раз, сразу видно правильный ответ).", "expired": "Загрузите файл ещё раз."},
     "uz": {"kind_q": "📦 Qabul qilindi: «{t}» — {n} savol\n\nQayerga qoʻshamiz?",
-           "k_test": "📝 Test (hamma uchun, reyting)", "k_tr": "🏋️ Trenajor (mashq)",
+           "k_test": "📝 Test (reyting bilan)", "k_tr": "🏋️ Trenajor (mashq)",
            "add_more": "\n\n🏋️ Yuklagandan soʻng tanlang: <b>test</b> (bitta urinish, reyting) yoki <b>trenajor</b> "
                        "(xohlagancha, toʻgʻri javob darhol koʻrinadi).", "expired": "Faylni qayta yuboring."},
     "en": {"kind_q": "📦 Received: “{t}” — {n} q.\n\nWhere to add it?",
-           "k_test": "📝 Test (for everyone, ranked)", "k_tr": "🏋️ Trainer (practice)",
+           "k_test": "📝 Test (ranked)", "k_tr": "🏋️ Trainer (practice)",
            "add_more": "\n\n🏋️ After uploading choose: <b>test</b> (one attempt, ranking) or <b>trainer</b> "
                        "(unlimited, correct answer shown at once).", "expired": "Please send the file again."},
     "zh": {"kind_q": "📦 已收到：「{t}」— {n} 题\n\n添加到哪里？",
-           "k_test": "📝 测验（所有人，排名）", "k_tr": "🏋️ 练习（无限次）",
+           "k_test": "📝 测验（排名）", "k_tr": "🏋️ 练习（无限次）",
            "add_more": "\n\n🏋️ 上传后请选择：<b>测验</b>（一次机会，排名）或 <b>练习</b>（无限次，立即显示正确答案）。",
            "expired": "请重新发送文件。"},
 }
@@ -313,12 +314,30 @@ async def submit(update, ctx, text, title):
     await update.message.reply_text(k(u.id, "kind_q").format(t=qz["title"], n=len(qz["questions"])), reply_markup=kb)
 
 
-async def publish(bot, u, chat_id, qz, bad, kind):
+def group_names():
+    """Группы из roster.json (список студентов для закрытых тестов)."""
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "roster.json"), encoding="utf-8") as f:
+            return list(json.load(f))
+    except Exception:
+        return []
+
+
+def group_kb(prefix):
+    rows = [[InlineKeyboardButton(f"👥 Только {g}", callback_data=f"{prefix}:{i}")] for i, g in enumerate(group_names())]
+    rows.append([InlineKeyboardButton("🌍 Для всех", callback_data=f"{prefix}:all")])
+    return InlineKeyboardMarkup(rows)
+
+
+async def publish(bot, u, chat_id, qz, bad, kind, group=None):
     author = C.user(u.id).get("name") or u.full_name or ""
     if u.username:
         author += f" (@{u.username})"
     admin = is_admin(u)
     code = C.add_quiz(qz, u.id, author, approved=admin, kind=kind)
+    if group and kind != "trainer":
+        C.STATE["quizzes"][code]["group"] = group
+        C.save()
     warn = f"\n⚠️ Пропущено {len(bad)} вопр. без правильного ответа." if bad else ""
     if admin:
         await bot.send_message(chat_id, f"✅ <b>Опубликовано!</b>\n\n{card_text(code)}{warn}",
@@ -433,6 +452,8 @@ def card_text(code):
     return (f"📝 <b>{e(qz['title'])}</b>\n{typ}\n📘 Предмет: {e(qz.get('subject') or '—')}\n"
             f"👤 Автор: {e(qz.get('author') or '—')}\n"
             f"❓ В банке: {len(qz['questions'])} · каждому: {qz['count']} · ⏱ {qz['time']} сек\n"
+            + ("" if C.kind(qz) == "trainer" else
+               f"👥 Для кого: {('только ' + e(qz['group']) + (' (после закрытия — для всех)' if qz.get('open', True) else ' → сейчас закрыт, доступен всем')) if qz.get('group') else 'для всех'}\n") +
             f"Статус: {st.get(qz.get('status', 'approved'), '')}")
 
 
@@ -503,6 +524,8 @@ def admin_kb(code):
          InlineKeyboardButton("✏️ Название", callback_data=f"ti:{code}")],
         [InlineKeyboardButton("🔁 Сделать тестом" if C.kind(qz) == "trainer" else "🔁 Сделать тренажёром",
                               callback_data=f"kd2:{code}")],
+        *([[InlineKeyboardButton(f"👥 Группа: {qz.get('group') or 'для всех'} — сменить", callback_data=f"gr:{code}")]]
+          if C.kind(qz) != "trainer" and group_names() else []),
         [InlineKeyboardButton("🔒 Закрыть" if qz.get("open", True) else "🟢 Открыть", callback_data=f"op:{code}"),
          InlineKeyboardButton("🗑 Удалить", callback_data=f"del:{code}")],
     ])
@@ -651,7 +674,28 @@ async def on_button(update: Update, ctx):
             await q.edit_message_text(f"{q.message.text}\n\n➡️ {choice}")
         except Exception:
             pass
+        if parts[1] != "trainer" and group_names():          # тест — спрашиваем, для какой группы
+            UPLOADS[q.from_user.id] = up
+            await q.message.reply_text(f"👥 Для кого тест «{e(up[0]['title'])}»?\n\n"
+                                       "Если выбрать группу — тест увидят только студенты из её списка "
+                                       "(бот узнаёт их по имени и фамилии). Когда закроете тест, он станет "
+                                       "доступен всем для тренировки.", parse_mode="HTML", reply_markup=group_kb("gp"))
+            return
         await publish(ctx.bot, q.from_user, q.message.chat.id, up[0], up[1], "trainer" if parts[1] == "trainer" else "test")
+        return
+    if kind == "gp":
+        up = UPLOADS.pop(q.from_user.id, None)
+        if not up:
+            await q.answer(k(q.from_user.id, "expired"), show_alert=True)
+            return
+        gs = group_names()
+        group = gs[int(parts[1])] if parts[1].isdigit() and int(parts[1]) < len(gs) else None
+        await q.answer("✅")
+        try:
+            await q.edit_message_text(f"{q.message.text}\n\n➡️ {('👥 Только ' + group) if group else '🌍 Для всех'}")
+        except Exception:
+            pass
+        await publish(ctx.bot, q.from_user, q.message.chat.id, up[0], up[1], "test", group)
         return
     if kind == "mycerts":
         await q.answer()
@@ -698,6 +742,14 @@ async def on_button(update: Update, ctx):
         qz["count"] = min(int(parts[2]), len(qz["questions"]))
     elif kind == "op":
         qz["open"] = not qz.get("open", True)
+    elif kind == "gr":
+        opts = [None] + group_names()
+        cur = qz.get("group") if qz.get("group") in opts else None
+        nxt = opts[(opts.index(cur) + 1) % len(opts)]
+        if nxt:
+            qz["group"] = nxt
+        else:
+            qz.pop("group", None)
     elif kind == "del":
         await q.answer()
         await q.message.reply_text(f"Удалить «{e(qz['title'])}» и все результаты?", parse_mode="HTML",

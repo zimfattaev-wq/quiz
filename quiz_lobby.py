@@ -18,14 +18,19 @@ LOBBY = {}                                               # code -> {uid: last_se
 
 
 # ================== список группы и сопоставление имён ==================
-def roster():
+def groups():
     try:
         with open(os.path.join(HERE, "roster.json"), encoding="utf-8") as f:
-            data = json.load(f)
+            return json.load(f)
     except Exception:
-        return "", []
-    group = next(iter(data), "")
-    return group, data.get(group, [])
+        return {}
+
+
+def roster(group=None):
+    data = groups()
+    if group is None:
+        group = next(iter(data), "")
+    return (group, data.get(group, [])) if group in data else ("", [])
 
 
 CYR = dict(zip("абвгдеёжзийклмнопрстуфхцчшщъыьэюяўқғҳ",
@@ -66,9 +71,9 @@ def exact(typed, full):
     return bool(t) and all(w in r for w in t)
 
 
-def match_all(people):
+def match_all(people, group=None):
     """people: [(uid, имя)] -> {uid: (индекс в списке, оценка)}; каждому из списка — не больше одного человека."""
-    _, names = roster()
+    _, names = roster(group)
     pairs = sorted(((score(nm, full), uid, i) for uid, nm in people for i, full in enumerate(names)), reverse=True)
     out, used = {}, set()
     for sc, uid, i in pairs:
@@ -115,8 +120,8 @@ def status(uid, code, join=True):
     if not qz.get("lobby_go") and len(room) >= LOBBY_MIN > 0:
         launch(code)
     people = [(u, C.user(u).get("name") or "") for u in room]
-    m = match_all(people)
-    group, names = roster()
+    group, names = roster(qz.get("group") or "")
+    m = match_all(people, group)
     joined = []
     for u, nm in people:
         i, sc = m.get(u, (None, 0))
@@ -126,18 +131,54 @@ def status(uid, code, join=True):
     got = {i for i, _ in m.values()}
     # кто уже начал тест (после запуска) — тоже «зашёл»
     started = [(u, a.get("name", "")) for u, a in C.STATE["attempts"].get(code, {}).items() if u not in room]
-    ms = match_all(started) if started else {}
+    ms = match_all(started, group) if started else {}
     got |= {i for i, _ in ms.values()}
     return {"ok": True, "code": code, "title": qz["title"], "need": LOBBY_MIN, "n": len(room), "go": bool(qz.get("lobby_go")),
             "group": group, "joined": joined, "missing": [nm for i, nm in enumerate(names) if i not in got],
             "started": len(started), "me_in": uid in room, "done": done, "admin": W.is_admin_uid(uid)}
 
 
+# ================== тесты только для группы ==================
+def member(uid, group):
+    """Студент из этой группы? Узнаём по имени и фамилии (опечатки допускаются)."""
+    if W.is_admin_uid(uid):
+        return True
+    _, names = roster(group)
+    nm = C.user(uid).get("name") or ""
+    return bool(nm and names) and max(score(nm, full) for full in names) >= 0.72
+
+
+def closed_to(uid, qz):
+    """Тест открыт только для группы, а этот человек не из неё. После закрытия теста — доступен всем."""
+    g = qz.get("group")
+    return bool(g) and C.kind(qz) != "trainer" and qz.get("open", True) and not member(uid, g)
+
+
+if not C.STATE.get("grp_v1"):                       # тесты, открытые сейчас, — только для MMT-403/26
+    _g = next(iter(groups()), "")
+    for _qz in C.STATE["quizzes"].values():
+        if _g and C.kind(_qz) != "trainer" and _qz.get("open", True) and _qz.get("status", "approved") == "approved":
+            _qz.setdefault("group", _g)
+    C.STATE["grp_v1"] = True
+    C.save()
+
+
 # ================== API ==================
 _prev_handle = W.handle
 
 
+def _blocked(user, code):
+    qz = C.STATE["quizzes"].get(str(code or "").upper())
+    return qz.get("group") if qz and closed_to(str(user["id"]), qz) else None
+
+
 def handle(method, path, query, body, user):
+    if user:
+        code = query.get("code") or query.get("q") if method == "GET" else body.get("code")
+        if path in ("/api/quiz", "/api/start", "/api/lobby", "/api/lobby/go") and code:
+            g = _blocked(user, code)
+            if g:
+                return {"ok": False, "error": "group", "group": g}
     if user and path.startswith("/api/lobby"):
         uid = str(user["id"])
         if path == "/api/lobby":
@@ -157,11 +198,19 @@ def handle(method, path, query, body, user):
                 and uid not in C.STATE["attempts"].get(str(body.get("code", "")).upper(), {}):
             return {"ok": False, "error": "lobby"}
     r = _prev_handle(method, path, query, body, user)
+    if user and isinstance(r, dict) and r.get("ok"):
+        uid = str(user["id"])
+        if path == "/api/list":
+            r["items"] = [q for q in r.get("items") or [] if not (C.STATE["quizzes"].get(q.get("code", "")) and
+                                                                  closed_to(uid, C.STATE["quizzes"][q["code"]]))]
+        if path == "/api/me" and isinstance(r.get("quiz"), dict) and _blocked(user, r["quiz"].get("code")):
+            r["quiz"] = None
     if isinstance(r, dict) and r.get("ok"):
         for q in ([r["quiz"]] if isinstance(r.get("quiz"), dict) else []) + (r.get("items") or [] if path == "/api/list" else []):
             qz = C.STATE["quizzes"].get(q.get("code", ""))
             if qz and isinstance(q, dict) and C.kind(qz) != "trainer":
                 q["lobby"] = {"need": LOBBY_MIN, "go": not need(qz), "n": len(alive(q["code"]))}
+                q["group"] = qz.get("group") or ""
     return r
 
 

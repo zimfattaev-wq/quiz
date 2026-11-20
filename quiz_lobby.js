@@ -17,19 +17,19 @@
 <script>
 (function(){
 const XL = {
- ru:{enter:"👥 Войти в зал ожидания",title:"Зал ожидания",of:"из",wait:"Тест начнётся сам, когда одновременно соберутся {n} человек. Не закрывайте приложение — если выйти, место в зале пропадёт.",
+ ru:{onlyG:"👥 Только для группы ",notG:"🔒 Этот тест сейчас только для группы {g}. Когда его закроют, он станет доступен всем для тренировки.",enter:"👥 Войти в зал ожидания",title:"Зал ожидания",of:"из",wait:"Тест начнётся сам, когда одновременно соберутся {n} человек. Не закрывайте приложение — если выйти, место в зале пропадёт.",
   go:"🚀 Набралось! Тест начинается…",inRoom:"✅ В зале",miss:"⏳ Ещё не зашли",typo:"имя с ошибкой — написано: ",ext:"нет в списке группы",me:"вы",
   force:"▶️ Запустить тест сейчас (админ)",already:"Тест уже запущен — можно начинать",start:"▶️ Начать тест",started:"уже начали тест",nobody:"Все из списка зашли 🎉",
   need:"Для начала нужно {n} человек одновременно"},
- uz:{enter:"👥 Kutish zaliga kirish",title:"Kutish zali",of:"/",wait:"Bir vaqtda {n} kishi yigʻilganda test oʻzi boshlanadi. Ilovani yopmang — chiqsangiz, zaldagi oʻrningiz yoʻqoladi.",
+ uz:{onlyG:"👥 Faqat guruh uchun: ",notG:"🔒 Bu test hozircha faqat {g} guruhi uchun. Yopilgach, hamma mashq qilishi mumkin boʻladi.",enter:"👥 Kutish zaliga kirish",title:"Kutish zali",of:"/",wait:"Bir vaqtda {n} kishi yigʻilganda test oʻzi boshlanadi. Ilovani yopmang — chiqsangiz, zaldagi oʻrningiz yoʻqoladi.",
   go:"🚀 Yigʻildi! Test boshlanmoqda…",inRoom:"✅ Zalda",miss:"⏳ Hali kirmaganlar",typo:"ism xato yozilgan: ",ext:"guruh roʻyxatida yoʻq",me:"siz",
   force:"▶️ Testni hozir boshlash (admin)",already:"Test allaqachon boshlangan — boshlash mumkin",start:"▶️ Testni boshlash",started:"testni boshlagan",nobody:"Roʻyxatdagilarning hammasi kirdi 🎉",
   need:"Boshlash uchun bir vaqtda {n} kishi kerak"},
- en:{enter:"👥 Enter the waiting room",title:"Waiting room",of:"of",wait:"The test starts by itself once {n} people are here at the same time. Keep the app open — if you leave, you lose your place.",
+ en:{onlyG:"👥 Only for group ",notG:"🔒 This test is only for group {g} for now. Once it is closed, everyone can practice it.",enter:"👥 Enter the waiting room",title:"Waiting room",of:"of",wait:"The test starts by itself once {n} people are here at the same time. Keep the app open — if you leave, you lose your place.",
   go:"🚀 Everyone's here! Starting…",inRoom:"✅ In the room",miss:"⏳ Not here yet",typo:"name has a typo — typed: ",ext:"not in the group list",me:"you",
   force:"▶️ Start the test now (admin)",already:"The test has started — you can begin",start:"▶️ Start test",started:"already started",nobody:"Everyone from the list is here 🎉",
   need:"{n} people must be here at once to start"},
- zh:{enter:"👥 进入等候室",title:"等候室",of:"/",wait:"同时到齐 {n} 人后测验会自动开始。请不要关闭应用——离开会失去位置。",
+ zh:{onlyG:"👥 仅限班级 ",notG:"🔒 该测验目前仅限 {g} 班。关闭后所有人都可以练习。",enter:"👥 进入等候室",title:"等候室",of:"/",wait:"同时到齐 {n} 人后测验会自动开始。请不要关闭应用——离开会失去位置。",
   go:"🚀 人齐了！测验开始…",inRoom:"✅ 已进入",miss:"⏳ 尚未进入",typo:"姓名有误——填写为：",ext:"不在班级名单中",me:"你",
   force:"▶️ 立即开始测验（管理员）",already:"测验已开始——可以作答",start:"▶️ 开始测验",started:"已开始作答",nobody:"名单上的人都到了 🎉",
   need:"需要同时有 {n} 人才能开始"}
@@ -41,6 +41,7 @@ const _in = screenIntro;
 screenIntro = function() {
   const r = _in();
   const q = S.quiz;
+  if (q && q.kind !== "trainer" && q.open && q.group && $("#go")) $("#go").insertAdjacentHTML("beforebegin", `<div class="muted" style="margin:8px 0">${xl().onlyG}<b>${esc(q.group)}</b></div>`);
   if (q && q.kind !== "trainer" && q.open && !q.result && q.lobby && !q.lobby.go && $("#go")) {
     $("#go").textContent = xl().enter;
     $("#go").insertAdjacentHTML("beforebegin", `<div class="muted" style="margin:8px 0">👥 ${xl().need.replace("{n}", q.lobby.need)}</div>`);
@@ -52,6 +53,7 @@ screenIntro = function() {
 const _apiL = api;
 api = async function(path, body, ...a) {
   const r = await _apiL(path, body, ...a);
+  if (r && r.error === "group" && /^\/api\/(quiz|start|lobby)/.test(path)) { stopLobby(false); setTimeout(() => screenList(xl().notG.replace("{g}", r.group || "")), 0); return {ok: false, error: "group"}; }
   if (path === "/api/start" && r && r.error === "lobby" && S.quiz) { setTimeout(() => screenLobby(S.quiz), 0); return {ok: false, error: "net"}; }
   return r;
 };
