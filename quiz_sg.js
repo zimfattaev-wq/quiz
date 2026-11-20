@@ -52,6 +52,7 @@
 .sg-pick .no{width:50px;border:0;font-weight:900;font-size:20px;background:rgba(214,69,61,.35);color:#fff}
 .sg-nobody{margin-top:8px;width:100%;height:44px;border-radius:12px;border:0;background:rgba(255,255,255,.14);color:#fff;font-weight:600;font-size:15px}
 .sg-flash{animation:sgfl .6s 2}@keyframes sgfl{50%{background:#8a1f1a}}
+.sg-fq{text-align:center;color:#f3c34a;font-size:13px;font-weight:700;margin-top:10px;opacity:.95}
 </style>
 <script>
 (function(){
@@ -78,6 +79,10 @@ const XS = {
   hint:"点击队伍加分并关闭题目。“−”答错扣分。",nobody:"无人答对——关闭",solo:"我",soloOk:"答对 ✅",empty:"暂无主题"}
 };
 const xs = () => XS[S.lang] || XS.ru;
+const FL = {ru: "👑 Основатель TSUE QUIZ: ", uz: "👑 TSUE QUIZ asoschisi: ", en: "👑 TSUE QUIZ founder: ", zh: "👑 TSUE QUIZ 创始人："};
+const fName = () => (S.me && S.me.founder && S.me.founder.name) || "Fattayev Azimjon";
+const fText = () => (FL[S.lang] || FL.ru) + fName();
+const fBox = () => `<div class="fline">${esc(FL[S.lang] || FL.ru)}<b>${esc(fName())}</b></div>`;
 const PR = [100, 200, 300, 400, 500], TM = [0, 15, 30, 45, 60, 90], RC = 2 * Math.PI * 25;
 const ld = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } };
 const sv = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
@@ -118,7 +123,7 @@ async function screenSG() {
   const c = G.cfg;
   html(`<button class="pcard" id="pc">${S.me.av ? avaImg(S.me.uid, S.me.av, "ava") : '<span class="lv">👤</span>'}<span><b>${L().prof}</b><span>${esc(S.me.name || "")}</span></span></button>
     ${tabsHtml()}
-    <div class="sg-hero"><h2>Своя <span>игра</span></h2><p>${t.lead}</p></div>
+    <div class="sg-hero"><h2>Своя <span>игра</span></h2><p>${t.lead}</p></div>${fBox()}
     <div class="sg-set"><h4>${t.teams}</h4><div class="sg-seg" id="sgn">${[1, 2, 3, 4, 5, 6].map(n => `<button data-n="${n}" class="${c.n === n ? "on" : ""}">${n}</button>`).join("")}</div>
     ${c.n > 1 ? `<div class="sg-names">${Array.from({length: c.n}, (_, i) => `<input data-i="${i}" maxlength="24" value="${esc(c.names[i] || "")}" placeholder="${t.team} ${i + 1}">`).join("")}</div>` : ""}
     <h4>${t.timer}</h4><div class="sg-seg" id="sgt" style="margin:0">${TM.map(s => `<button data-t="${s}" class="${c.timer === s ? "on" : ""}">${s ? s + " " + t.sec : t.noT}</button>`).join("")}</div></div>
@@ -154,7 +159,7 @@ function board() {
     PR.forEach((p, k) => { const id = ci * 5 + k, done = g.used.includes(id); cells += `<button class="sg-cell ${done ? "done" : ""}" data-id="${id}" ${done ? "disabled" : ""}>${p}</button>`; });
   });
   const win = g.names.filter((_, i) => g.scores[i] === max);
-  html(`<button class="bk" id="bk">${t.back}</button><h2 style="margin:6px 0">🎲 ${esc(g.d.title)}</h2>
+  html(`<button class="bk" id="bk">${t.back}</button><h2 style="margin:6px 0">🎲 ${esc(g.d.title)}</h2>${fBox()}
     <div class="sg-scores">${g.names.map((nm, i) => `<div class="sg-team ${g.n > 1 && g.scores[i] === max && max > 0 ? "lead" : ""}"><span class="nm">${esc(nm)}</span>
       <span class="sc ${g.scores[i] < 0 ? "neg" : ""}">${g.scores[i]}</span><div class="adj"><button class="sg-mi" data-i="${i}" data-d="-100">−100</button><button class="sg-pl" data-i="${i}" data-d="100">+100</button></div></div>`).join("")}</div>
     <div class="sg-board">${cells}</div>
@@ -181,7 +186,7 @@ function openQ(id) {
       <div class="sg-ring" id="rg"><svg viewBox="0 0 58 58"><circle class="tr" cx="29" cy="29" r="25"/><circle class="fg" id="rf" cx="29" cy="29" r="25"/></svg><b id="tn"></b></div></div>` : ""}</div>
     <div class="sg-body"><p class="sg-qt">${esc(q)}</p><div class="sg-ans" id="an" hidden><small>${t.ans}</small>${esc(a)}</div><button class="sg-show" id="sh">${t.show}</button></div>
     <div class="sg-aw"><p>${t.hint}</p><div class="sg-tg">${g.names.map((nm, i) => `<div class="sg-pick"><button class="ok" data-i="${i}">${g.n === 1 ? t.soloOk : esc(nm)}<small>+${price}</small></button><button class="no" data-i="${i}">−</button></div>`).join("")}</div>
-    <button class="sg-nobody" id="nb">${t.nobody}</button></div>`;
+    <button class="sg-nobody" id="nb">${t.nobody}</button><div class="sg-fq">${esc(fText())}</div></div>`;
   document.body.appendChild(o);
   document.body.style.overflow = "hidden";
   o.querySelector("#sh").onclick = () => { hap(); o.querySelector("#an").hidden = false; o.querySelector("#sh").remove(); };
