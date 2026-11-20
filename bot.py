@@ -314,6 +314,24 @@ async def submit(update, ctx, text, title):
     await update.message.reply_text(k(u.id, "kind_q").format(t=qz["title"], n=len(qz["questions"])), reply_markup=kb)
 
 
+LOBBY_DEFAULT = int(os.environ.get("LOBBY_MIN", "18"))
+MINS = [0, 1, 5, 10, 15, 18, 20, 23, 25, 30]
+
+
+def lobby_min(qz):
+    try:
+        return max(0, int(qz.get("lobby_min", LOBBY_DEFAULT)))
+    except (TypeError, ValueError):
+        return LOBBY_DEFAULT
+
+
+def lobby_text(qz):
+    n = lobby_min(qz)
+    if not n:
+        return "выключен — начинают сразу"
+    return f"старт при {n} чел. одновременно" + (" (уже запущен)" if qz.get("lobby_go") else "")
+
+
 def group_names():
     """Группы из roster.json (список студентов для закрытых тестов)."""
     try:
@@ -418,6 +436,17 @@ async def on_text(update: Update, ctx):
     uid = update.effective_user.id
     if uid in EDIT and is_admin(update.effective_user):
         field, code = EDIT.pop(uid)
+        if field == "lobby_min" and code in C.STATE["quizzes"]:
+            txt = (update.message.text or "").strip()
+            if not txt.isdigit() or int(txt) > 500:
+                EDIT[uid] = (field, code)
+                await update.message.reply_text("Нужно число от 0 до 500, например 18. Отмена — /cancel")
+                return
+            C.STATE["quizzes"][code]["lobby_min"] = int(txt)
+            C.save()
+            await update.message.reply_text("✅ Сохранено\n\n" + card_text(code), parse_mode="HTML",
+                                            reply_markup=admin_kb(code))
+            return
         if code in C.STATE["quizzes"]:
             C.STATE["quizzes"][code][field] = (update.message.text or "").strip()[:120]
             C.save()
@@ -453,6 +482,7 @@ def card_text(code):
             f"👤 Автор: {e(qz.get('author') or '—')}\n"
             f"❓ В банке: {len(qz['questions'])} · каждому: {qz['count']} · ⏱ {qz['time']} сек\n"
             + ("" if C.kind(qz) == "trainer" else
+               f"🚪 Зал ожидания: {lobby_text(qz)}\n"
                f"👥 Для кого: {('только ' + e(qz['group']) + (' (после закрытия — для всех)' if qz.get('open', True) else ' → сейчас закрыт, доступен всем')) if qz.get('group') else 'для всех'}\n") +
             f"Статус: {st.get(qz.get('status', 'approved'), '')}")
 
@@ -524,6 +554,8 @@ def admin_kb(code):
          InlineKeyboardButton("✏️ Название", callback_data=f"ti:{code}")],
         [InlineKeyboardButton("🔁 Сделать тестом" if C.kind(qz) == "trainer" else "🔁 Сделать тренажёром",
                               callback_data=f"kd2:{code}")],
+        *([[InlineKeyboardButton(f"🚪 Минимум людей: {lobby_min(qz) or 'без зала'} — изменить", callback_data=f"mn:{code}")]]
+          if C.kind(qz) != "trainer" else []),
         *([[InlineKeyboardButton(f"👥 Группа: {qz.get('group') or 'для всех'} — сменить", callback_data=f"gr:{code}")]]
           if C.kind(qz) != "trainer" and group_names() else []),
         [InlineKeyboardButton("🔒 Закрыть" if qz.get("open", True) else "🟢 Открыть", callback_data=f"op:{code}"),
@@ -706,6 +738,30 @@ async def on_button(update: Update, ctx):
         await q.answer()
         return
     qz = C.STATE["quizzes"][code]
+    if kind == "mn":
+        cur = lobby_min(qz)
+        rows, row = [], []
+        for n in MINS:
+            row.append(InlineKeyboardButton(("✅ " if n == cur else "") + (str(n) if n else "Без зала"), callback_data=f"mv:{code}:{n}"))
+            if len(row) == 5:
+                rows.append(row)
+                row = []
+        if row:
+            rows.append(row)
+        rows.append([InlineKeyboardButton("✏️ Своё число", callback_data=f"mx:{code}")])
+        if qz.get("lobby_go"):
+            rows.append([InlineKeyboardButton("🔄 Снова ждать в зале (сбросить запуск)", callback_data=f"mr:{code}")])
+        await q.answer()
+        await q.message.reply_text(f"🚪 Сколько человек должно одновременно зайти, чтобы начался тест «{e(qz['title'])}»?\n"
+                                   f"Сейчас: <b>{lobby_text(qz)}</b>", parse_mode="HTML",
+                                   reply_markup=InlineKeyboardMarkup(rows))
+        return
+    if kind == "mx":
+        EDIT[q.from_user.id] = ("lobby_min", code)
+        await q.answer()
+        await q.message.reply_text(f"✏️ Напишите число — сколько человек нужно для старта «{e(qz['title'])}» "
+                                   "(0 — без зала ожидания):\n(отмена — /cancel)", parse_mode="HTML")
+        return
     if kind in ("sj", "ti"):
         EDIT[q.from_user.id] = ("subject" if kind == "sj" else "title", code)
         await q.answer()
@@ -742,6 +798,10 @@ async def on_button(update: Update, ctx):
         qz["count"] = min(int(parts[2]), len(qz["questions"]))
     elif kind == "op":
         qz["open"] = not qz.get("open", True)
+    elif kind == "mv":
+        qz["lobby_min"] = int(parts[2])
+    elif kind == "mr":
+        qz.pop("lobby_go", None)
     elif kind == "gr":
         opts = [None] + group_names()
         cur = qz.get("group") if qz.get("group") in opts else None

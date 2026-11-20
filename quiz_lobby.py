@@ -85,8 +85,16 @@ def match_all(people, group=None):
 
 
 # ================== зал ожидания ==================
+def min_of(qz):
+    """Сколько человек нужно для старта: своё число у теста (админ меняет в боте) или общее по умолчанию."""
+    try:
+        return max(0, int(qz.get("lobby_min", LOBBY_MIN)))
+    except (TypeError, ValueError):
+        return LOBBY_MIN
+
+
 def need(qz):
-    return LOBBY_MIN > 0 and C.kind(qz) != "trainer" and qz.get("open", True) and not qz.get("lobby_go")
+    return min_of(qz) > 0 and C.kind(qz) != "trainer" and qz.get("open", True) and not qz.get("lobby_go")
 
 
 def alive(code):
@@ -117,7 +125,7 @@ def status(uid, code, join=True):
     done = str(uid) in C.STATE["attempts"].get(code, {})
     if join and not done and C.user(uid).get("name"):
         room[uid] = time.time()
-    if not qz.get("lobby_go") and len(room) >= LOBBY_MIN > 0:
+    if not qz.get("lobby_go") and len(room) >= min_of(qz) > 0:
         launch(code)
     people = [(u, C.user(u).get("name") or "") for u in room]
     group, names = roster(qz.get("group") or "")
@@ -133,7 +141,7 @@ def status(uid, code, join=True):
     started = [(u, a.get("name", "")) for u, a in C.STATE["attempts"].get(code, {}).items() if u not in room]
     ms = match_all(started, group) if started else {}
     got |= {i for i, _ in ms.values()}
-    return {"ok": True, "code": code, "title": qz["title"], "need": LOBBY_MIN, "n": len(room), "go": bool(qz.get("lobby_go")),
+    return {"ok": True, "code": code, "title": qz["title"], "need": min_of(qz), "n": len(room), "go": bool(qz.get("lobby_go")) or not min_of(qz),
             "group": group, "joined": joined, "missing": [nm for i, nm in enumerate(names) if i not in got],
             "started": len(started), "me_in": uid in room, "done": done, "admin": W.is_admin_uid(uid)}
 
@@ -209,7 +217,7 @@ def handle(method, path, query, body, user):
         for q in ([r["quiz"]] if isinstance(r.get("quiz"), dict) else []) + (r.get("items") or [] if path == "/api/list" else []):
             qz = C.STATE["quizzes"].get(q.get("code", ""))
             if qz and isinstance(q, dict) and C.kind(qz) != "trainer":
-                q["lobby"] = {"need": LOBBY_MIN, "go": not need(qz), "n": len(alive(q["code"]))}
+                q["lobby"] = {"need": min_of(qz), "go": not need(qz), "n": len(alive(q["code"]))}
                 q["group"] = qz.get("group") or ""
     return r
 
